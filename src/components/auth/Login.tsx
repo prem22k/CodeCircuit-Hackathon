@@ -2,11 +2,11 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '../contexts/AuthContext';
-import { LoadingSpinner } from '../components/common/LoadingSpinner';
-import { showToast } from '../components/common/Toast';
+import { useAuth } from '@/contexts/AuthContext';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import { showToast } from '@/components/common/Toast';
 
-export const Login = () => {
+const Login = () => {
   const router = useRouter();
   const { user, loading, signInWithGoogle } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
@@ -72,4 +72,6 @@ export const Login = () => {
       </div>
     </div>
   );
-}; 
+};
+
+export default Login; 
