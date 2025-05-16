@@ -1,29 +1,32 @@
+'use client';
+
 import { useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import { useRouter } from 'next/router';
 import { useAuth } from '../contexts/AuthContext';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
-import { useToastStore } from '../components/common/Toast';
+import { showToast } from '../components/common/Toast';
 
-export const Login = () => {
+const Login = () => {
+  const router = useRouter();
   const { user, signInWithGoogle } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
-  const addToast = useToastStore((state) => state.addToast);
 
   const handleGoogleSignIn = async () => {
     try {
       setIsLoading(true);
       await signInWithGoogle();
-      addToast('success', 'Successfully signed in!');
+      showToast.success('Successfully signed in!');
     } catch (error) {
       console.error('Login error:', error);
-      addToast('error', 'Failed to sign in. Please try again.');
+      showToast.error('Failed to sign in. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
   if (user) {
-    return <Navigate to="/decks" replace />;
+    router.replace('/decks');
+    return null;
   }
 
   return (
@@ -60,4 +63,6 @@ export const Login = () => {
       </div>
     </div>
   );
-}; 
+};
+
+export default Login; 

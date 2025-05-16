@@ -7,10 +7,11 @@ import { useAuth } from '@/hooks/useAuth';
 import { useDeck } from '@/hooks/useDeck';
 
 export default function ReviewDeck() {
-  const { deckId } = useParams();
+  const params = useParams();
+  const deckId = params?.deckId as string;
   const router = useRouter();
   const { user } = useAuth();
-  const { deck, loading, error } = useDeck(deckId as string);
+  const { deck, loading, error } = useDeck(deckId);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
 

@@ -2,10 +2,10 @@
 
 import Link from 'next/link';
 import { Brain } from 'lucide-react';
-import { useAuthContext } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 export function Header() {
-  const { user, signInWithGoogle, signOut } = useAuthContext();
+  const { user, signInWithGoogle, signOut } = useAuth();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">

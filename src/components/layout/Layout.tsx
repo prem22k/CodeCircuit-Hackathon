@@ -1,5 +1,7 @@
+'use client';
+
 import { ReactNode } from 'react';
-import { useAuthContext } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Header } from './Header';
 import { Loader2 } from 'lucide-react';
 
@@ -8,7 +10,7 @@ interface LayoutProps {
 }
 
 export function Layout({ children }: LayoutProps) {
-  const { loading } = useAuthContext();
+  const { loading } = useAuth();
 
   if (loading) {
     return (

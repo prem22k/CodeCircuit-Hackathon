@@ -1,4 +1,4 @@
-## 🚀 Comprehensive 7‑Day Cursor‑Friendly Roadmap
+## 🚀 Comprehensive 2‑Day Cursor‑Friendly Roadmap
 
 ### 📂 Initial Setup (Day 0)
 
@@ -34,7 +34,7 @@
 
 ---
 
-### 📚 Day 2: Deck Management CRUD
+### 📚 Day 1: Deck Management CRUD
 
 1. **Data Model & Storage Layer**
 
@@ -52,7 +52,7 @@
 
 ---
 
-### 📦 Day 3: Spaced Repetition Logic & Storage
+### 📦 Day 1: Spaced Repetition Logic & Storage
 
 * **Implement Leitner or SM‑2 Algorithm**
 
@@ -65,7 +65,7 @@
 
 ---
 
-### 🃏 Day 4: Review Mode UI
+### 🃏 Day 1: Review Mode UI
 
 1. **Review Screen Layout** (`/review/:deckId`)
 
@@ -84,7 +84,7 @@
 
 ---
 
-### 📊 Day 5: Stats Dashboard
+### 📊 Day 2: Stats Dashboard
 
 * **Review History Visualization**
 
@@ -99,7 +99,7 @@
 
 ---
 
-### 🎨 Day 6: Theming, Responsiveness & Micro‑Interactions
+### 🎨 Day 2: Theming, Responsiveness & Micro‑Interactions
 
 1. **Dark & Light Mode**
 
@@ -116,7 +116,7 @@
 
 ---
 
-### 🚀 Day 7: Polish, Testing & Deployment
+### 🚀 Day 2: Polish, Testing & Deployment
 
 * **E2E & Unit Tests**
 

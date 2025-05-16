@@ -6,6 +6,7 @@ import { Search, Plus } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useDecks } from '@/hooks/useDecks';
 import { CreateDeckDialog } from '@/components/decks/CreateDeckDialog';
+import { Timestamp } from 'firebase/firestore';
 
 export default function Decks() {
   const { user } = useAuth();
@@ -16,6 +17,11 @@ export default function Decks() {
   const filteredDecks = decks?.filter(deck =>
     deck.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const formatLastStudied = (timestamp: Timestamp | undefined | null) => {
+    if (!timestamp) return 'Never';
+    return timestamp.toDate().toLocaleDateString();
+  };
 
   if (!user) {
     return (
@@ -82,7 +88,7 @@ export default function Decks() {
                 </p>
                 <div className="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400">
                   <span>{deck.cards?.length || 0} cards</span>
-                  <span>Last studied: {deck.lastStudied || 'Never'}</span>
+                  <span>Last studied: {formatLastStudied(deck.lastStudied)}</span>
                 </div>
               </Link>
             ))}

@@ -125,4 +125,3 @@ export function CreateDeckDialog({ open, onClose }: CreateDeckDialogProps) {
     </div>
   );
 } 
-} 

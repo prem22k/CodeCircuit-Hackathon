@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getAnalytics } from 'firebase/analytics';
 
@@ -23,6 +23,9 @@ export const analytics = typeof window !== 'undefined' ? getAnalytics(app) : nul
 
 // Authentication providers
 export const googleProvider = new GoogleAuthProvider();
+
+// Authentication functions
+export const signInWithGoogle = () => signInWithPopup(auth, googleProvider);
 
 // Export app instance
 export default app; 

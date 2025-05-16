@@ -1,0 +1,58 @@
+{
+  "polyfillFiles": [
+    "static/chunks/polyfills-c67a75d1b6f99dc8.js"
+  ],
+  "devFiles": [],
+  "ampDevFiles": [],
+  "lowPriorityFiles": [
+    "static/qijtt5xaZOyFyWOOMikS6/_buildManifest.js",
+    "static/qijtt5xaZOyFyWOOMikS6/_ssgManifest.js"
+  ],
+  "rootMainFiles": [
+    "static/chunks/webpack-5a3f287dfe429ea9.js",
+    "static/chunks/fd9d1056-7353c298fb3e53bd.js",
+    "static/chunks/69-10cafb6c467cf394.js",
+    "static/chunks/main-app-69ce2ee8c436b779.js"
+  ],
+  "pages": {
+    "/Decks": [
+      "static/chunks/webpack-5a3f287dfe429ea9.js",
+      "static/chunks/framework-e7416738dc5b1ad3.js",
+      "static/chunks/main-efcb22efab8d26bc.js",
+      "static/chunks/970-ec4d6479479a2b05.js",
+      "static/chunks/862-b2bafe299ebf2b8b.js",
+      "static/chunks/147-9d72629031a06d3c.js",
+      "static/chunks/pages/Decks-5337091443a7c526.js"
+    ],
+    "/Home": [
+      "static/chunks/webpack-5a3f287dfe429ea9.js",
+      "static/chunks/framework-e7416738dc5b1ad3.js",
+      "static/chunks/main-efcb22efab8d26bc.js",
+      "static/chunks/862-b2bafe299ebf2b8b.js",
+      "static/chunks/pages/Home-6a4ecc897a67f5fc.js"
+    ],
+    "/Login": [
+      "static/chunks/webpack-5a3f287dfe429ea9.js",
+      "static/chunks/framework-e7416738dc5b1ad3.js",
+      "static/chunks/main-efcb22efab8d26bc.js",
+      "static/chunks/08e055c1-c9eaf0e7ef5e50b6.js",
+      "static/chunks/7112840a-a3307ef173464a58.js",
+      "static/chunks/970-ec4d6479479a2b05.js",
+      "static/chunks/922-01aa662221114b2b.js",
+      "static/chunks/pages/Login-d72e89464c04be95.js"
+    ],
+    "/_app": [
+      "static/chunks/webpack-5a3f287dfe429ea9.js",
+      "static/chunks/framework-e7416738dc5b1ad3.js",
+      "static/chunks/main-efcb22efab8d26bc.js",
+      "static/chunks/pages/_app-75f6107b0260711c.js"
+    ],
+    "/_error": [
+      "static/chunks/webpack-5a3f287dfe429ea9.js",
+      "static/chunks/framework-e7416738dc5b1ad3.js",
+      "static/chunks/main-efcb22efab8d26bc.js",
+      "static/chunks/pages/_error-9a890acb1e81c3fc.js"
+    ]
+  },
+  "ampFirstPages": []
+}

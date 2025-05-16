@@ -1,20 +1,21 @@
+'use client';
+
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { Plus, Pencil, Trash2, BookOpen } from 'lucide-react';
 import { getDecks, saveDeck, deleteDeck } from '../utils/storage';
 import { Deck } from '../types';
 import { Dialog } from '@headlessui/react';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
-import { useToastStore } from '../components/common/Toast';
+import { showToast } from '../components/common/Toast';
 
-export const Decks = () => {
+const Decks = () => {
   const [decks, setDecks] = useState<Deck[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [editingDeck, setEditingDeck] = useState<Deck | null>(null);
   const [formData, setFormData] = useState({ title: '', description: '' });
   const [isSaving, setIsSaving] = useState(false);
-  const addToast = useToastStore((state) => state.addToast);
 
   useEffect(() => {
     loadDecks();
@@ -27,7 +28,7 @@ export const Decks = () => {
       setDecks(loadedDecks);
     } catch (error) {
       console.error('Error loading decks:', error);
-      addToast('error', 'Failed to load decks. Please try again.');
+      showToast.error('Failed to load decks. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -49,10 +50,10 @@ export const Decks = () => {
       saveDeck(deck);
       setDecks(getDecks());
       closeModal();
-      addToast('success', `Deck ${editingDeck ? 'updated' : 'created'} successfully!`);
+      showToast.success(`Deck ${editingDeck ? 'updated' : 'created'} successfully!`);
     } catch (error) {
       console.error('Error saving deck:', error);
-      addToast('error', 'Failed to save deck. Please try again.');
+      showToast.error('Failed to save deck. Please try again.');
     } finally {
       setIsSaving(false);
     }
@@ -63,10 +64,10 @@ export const Decks = () => {
       try {
         deleteDeck(deckId);
         setDecks(getDecks());
-        addToast('success', 'Deck deleted successfully!');
+        showToast.success('Deck deleted successfully!');
       } catch (error) {
         console.error('Error deleting deck:', error);
-        addToast('error', 'Failed to delete deck. Please try again.');
+        showToast.error('Failed to delete deck. Please try again.');
       }
     }
   };
@@ -144,7 +145,7 @@ export const Decks = () => {
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-500">{deck.cardCount} cards</span>
                 <Link
-                  to={`/review/${deck.id}`}
+                  href={`/review/${deck.id}`}
                   className="btn bg-gray-100 text-gray-900 hover:bg-gray-200 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700 flex items-center gap-2"
                 >
                   <BookOpen className="w-4 h-4" />
@@ -217,4 +218,6 @@ export const Decks = () => {
       </Dialog>
     </div>
   );
-}; 
+};
+
+export default Decks; 

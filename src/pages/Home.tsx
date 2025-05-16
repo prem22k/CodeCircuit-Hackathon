@@ -1,7 +1,9 @@
-import { Link } from 'react-router-dom';
+'use client';
+
+import Link from 'next/link';
 import { Brain, Zap, BarChart3, Share2 } from 'lucide-react';
 
-export const Home = () => {
+const Home = () => {
   return (
     <div className="space-y-20">
       {/* Hero Section */}
@@ -15,7 +17,7 @@ export const Home = () => {
           Remember more, study less.
         </p>
         <div className="flex justify-center gap-4">
-          <Link to="/decks" className="btn btn-primary">
+          <Link href="/decks" className="btn btn-primary">
             Get Started
           </Link>
           <a
@@ -62,4 +64,6 @@ const FeatureCard = ({ icon, title, description }: { icon: React.ReactNode; titl
       </div>
     </div>
   );
-}; 
+};
+
+export default Home; 
