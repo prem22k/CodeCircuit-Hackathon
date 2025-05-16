@@ -17,17 +17,9 @@ export function Header() {
 
         <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
           {user ? (
-            <>
-              <Link href="/decks" className="transition-colors hover:text-foreground/80">
-                My Decks
-              </Link>
-              <Link href="/explore" className="transition-colors hover:text-foreground/80">
-                Explore
-              </Link>
-              <Link href="/stats" className="transition-colors hover:text-foreground/80">
-                Stats
-              </Link>
-            </>
+            <Link href="/decks" className="transition-colors hover:text-foreground/80">
+              My Decks
+            </Link>
           ) : null}
         </nav>
 
@@ -35,13 +27,13 @@ export function Header() {
           {user ? (
             <div className="flex items-center space-x-4">
               <img
-                src={user.photoURL || 'https://github.com/shadcn.png'}
+                src={user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'User')}`}
                 alt={user.displayName || 'User'}
                 className="h-8 w-8 rounded-full"
               />
               <button
                 onClick={() => signOut()}
-                className="text-sm font-medium text-muted-foreground hover:text-foreground"
+                className="text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
               >
                 Sign Out
               </button>
@@ -49,7 +41,7 @@ export function Header() {
           ) : (
             <button
               onClick={() => signInWithGoogle()}
-              className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
+              className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary-500 text-white hover:bg-primary-600 h-10 px-4 py-2"
             >
               Sign In with Google
             </button>
