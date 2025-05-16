@@ -1,27 +1,27 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
-import { showToast } from '@/components/common/Toast';
 
 const Login = () => {
   const router = useRouter();
   const { user, loading, signInWithGoogle } = useAuth();
-  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (user && !loading) {
+      router.push('/decks');
+    }
+  }, [user, loading, router]);
 
   const handleGoogleSignIn = async () => {
     try {
-      setIsLoading(true);
       await signInWithGoogle();
-      showToast.success('Successfully signed in!');
-      router.push('/decks');
+      // Toast is now handled in AuthContext
     } catch (error) {
       console.error('Login error:', error);
-      showToast.error('Failed to sign in. Please try again.');
-    } finally {
-      setIsLoading(false);
+      // Toast is now handled in AuthContext
     }
   };
 
@@ -34,8 +34,11 @@ const Login = () => {
   }
 
   if (user) {
-    router.push('/decks');
-    return null;
+    return (
+      <div className="min-h-[80vh] flex items-center justify-center">
+        <LoadingSpinner />
+      </div>
+    );
   }
 
   return (
@@ -48,22 +51,16 @@ const Login = () => {
         
         <button
           onClick={handleGoogleSignIn}
-          disabled={isLoading}
           className="w-full btn bg-white hover:bg-gray-50 text-gray-900 border border-gray-300 
-                   flex items-center justify-center gap-3 py-3"
+                   flex items-center justify-center gap-3 py-3 transition-colors
+                   dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-white dark:border-gray-600"
         >
-          {isLoading ? (
-            <LoadingSpinner />
-          ) : (
-            <>
-              <img
-                src="https://www.google.com/favicon.ico"
-                alt="Google"
-                className="w-5 h-5"
-              />
-              Continue with Google
-            </>
-          )}
+          <img
+            src="https://www.google.com/favicon.ico"
+            alt="Google"
+            className="w-5 h-5"
+          />
+          Continue with Google
         </button>
 
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-8">
