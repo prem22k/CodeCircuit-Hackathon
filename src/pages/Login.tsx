@@ -1,14 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '../contexts/AuthContext';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { showToast } from '../components/common/Toast';
 
-const Login = () => {
+export const Login = () => {
   const router = useRouter();
-  const { user, signInWithGoogle } = useAuth();
+  const { user, loading, signInWithGoogle } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
   const handleGoogleSignIn = async () => {
@@ -16,6 +16,7 @@ const Login = () => {
       setIsLoading(true);
       await signInWithGoogle();
       showToast.success('Successfully signed in!');
+      router.push('/decks');
     } catch (error) {
       console.error('Login error:', error);
       showToast.error('Failed to sign in. Please try again.');
@@ -24,8 +25,16 @@ const Login = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-[80vh] flex items-center justify-center">
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
   if (user) {
-    router.replace('/decks');
+    router.push('/decks');
     return null;
   }
 
@@ -63,6 +72,4 @@ const Login = () => {
       </div>
     </div>
   );
-};
-
-export default Login; 
+}; 
