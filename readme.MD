@@ -1,3 +1,53 @@
+# BrainBoost - Smart Flashcard App
+
+A modern flashcard application built for the CodeCircuit Hackathon, featuring spaced repetition and intelligent learning algorithms.
+
+## Environment Setup
+
+This project uses Firebase for authentication and data storage. You'll need to set up your environment variables:
+
+1. Create a `.env.local` file in the root directory
+2. Copy the contents of `.env.example`
+3. Replace the placeholder values with your Firebase configuration
+
+```bash
+# Firebase Configuration
+NEXT_PUBLIC_FIREBASE_API_KEY=
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
+NEXT_PUBLIC_FIREBASE_APP_ID=
+NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=
+```
+
+⚠️ **Important**: Never commit your `.env.local` file or expose your API keys in the repository.
+
+## Getting Started
+
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+2. Set up your Firebase project:
+   - Create a new project in Firebase Console
+   - Enable Authentication with Google provider
+   - Create a Firestore database
+   - Copy your Firebase configuration to `.env.local`
+
+3. Run the development server:
+   ```bash
+   npm run dev
+   ```
+
+## Deployment
+
+When deploying to Vercel:
+1. Add all environment variables in your Vercel project settings
+2. Ensure you've regenerated and are using secure API keys
+3. Never expose API keys in your code or commit history
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
@@ -31,13 +81,13 @@ See the section about [deployment](https://facebook.github.io/create-react-app/d
 
 ### `npm run eject`
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+**Note: this is a one-way operation. Once you `eject`, you can't go back!**
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
 
 ## Learn More
 
