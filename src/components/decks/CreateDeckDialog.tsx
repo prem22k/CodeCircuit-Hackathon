@@ -1,134 +1,128 @@
+'use client';
+
 import { useState } from 'react';
 import { X } from 'lucide-react';
-import { useAuthContext } from '@/contexts/AuthContext';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 
 interface CreateDeckDialogProps {
-  isOpen: boolean;
+  open: boolean;
   onClose: () => void;
 }
 
-export function CreateDeckDialog({ isOpen, onClose }: CreateDeckDialogProps) {
-  const { user } = useAuthContext();
+export function CreateDeckDialog({ open, onClose }: CreateDeckDialogProps) {
+  const { user } = useAuth();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [isPublic, setIsPublic] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
 
-    setIsSubmitting(true);
+    if (!user) {
+      toast.error('You must be signed in to create a deck');
+      return;
+    }
+
+    if (!title.trim()) {
+      toast.error('Please enter a title for your deck');
+      return;
+    }
+
+    setLoading(true);
+
     try {
-      await addDoc(collection(db, `users/${user.uid}/decks`), {
-        title,
-        description,
-        isPublic,
+      const deckRef = collection(db, `users/${user.uid}/decks`);
+      await addDoc(deckRef, {
+        title: title.trim(),
+        description: description.trim(),
         userId: user.uid,
-        cardCount: 0,
-        tags: [],
+        cards: [],
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });
 
       toast.success('Deck created successfully!');
-      onClose();
       setTitle('');
       setDescription('');
-      setIsPublic(false);
+      onClose();
     } catch (error) {
       console.error('Error creating deck:', error);
       toast.error('Failed to create deck. Please try again.');
     } finally {
-      setIsSubmitting(false);
+      setLoading(false);
     }
   };
 
-  if (!isOpen) return null;
+  if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm">
-      <div className="fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 sm:rounded-lg">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Create New Deck</h2>
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div className="fixed inset-0 bg-black/50" onClick={onClose} />
+      <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-2xl font-bold">Create New Deck</h2>
           <button
             onClick={onClose}
-            className="rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
+            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
           >
-            <X className="h-4 w-4" />
-            <span className="sr-only">Close</span>
+            <X className="w-6 h-6" />
           </button>
         </div>
+
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <label
-              htmlFor="title"
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-            >
+          <div>
+            <label htmlFor="title" className="block text-sm font-medium mb-1">
               Title
             </label>
             <input
-              id="title"
               type="text"
-              required
+              id="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
               placeholder="Enter deck title"
+              disabled={loading}
             />
           </div>
-          <div className="space-y-2">
-            <label
-              htmlFor="description"
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-            >
+
+          <div>
+            <label htmlFor="description" className="block text-sm font-medium mb-1">
               Description
             </label>
             <textarea
               id="description"
-              required
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
               placeholder="Enter deck description"
+              rows={3}
+              disabled={loading}
             />
           </div>
-          <div className="flex items-center space-x-2">
-            <input
-              id="isPublic"
-              type="checkbox"
-              checked={isPublic}
-              onChange={(e) => setIsPublic(e.target.checked)}
-              className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-            />
-            <label
-              htmlFor="isPublic"
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-            >
-              Make this deck public
-            </label>
-          </div>
-          <div className="flex justify-end space-x-2">
+
+          <div className="flex justify-end gap-3">
             <button
               type="button"
               onClick={onClose}
-              className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
+              className="btn btn-outline"
+              disabled={loading}
             >
               Cancel
             </button>
             <button
               type="submit"
-              disabled={isSubmitting}
-              className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
+              className="btn btn-primary"
+              disabled={loading}
             >
-              {isSubmitting ? 'Creating...' : 'Create Deck'}
+              {loading ? 'Creating...' : 'Create Deck'}
             </button>
           </div>
         </form>
       </div>
     </div>
   );
+} 
 } 

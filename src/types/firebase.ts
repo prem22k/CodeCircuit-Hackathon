@@ -9,29 +9,23 @@ export interface User {
   lastLoginAt: Timestamp;
 }
 
-export interface Deck {
-  id: string;
-  userId: string;
-  title: string;
-  description: string;
-  createdAt: Timestamp;
-  updatedAt: Timestamp;
-  isPublic: boolean;
-  cardCount: number;
-  tags: string[];
-}
-
 export interface Card {
   id: string;
-  deckId: string;
-  userId: string;
   front: string;
   back: string;
   createdAt: Timestamp;
   updatedAt: Timestamp;
-  lastReviewed?: Timestamp;
-  difficulty: 'easy' | 'medium' | 'hard';
-  nextReviewDate?: Timestamp;
+}
+
+export interface Deck {
+  id: string;
+  title: string;
+  description: string;
+  cards: Card[];
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+  lastStudied?: Timestamp;
+  userId: string;
 }
 
 export interface ReviewSession {

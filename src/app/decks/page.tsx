@@ -1,101 +1,99 @@
+'use client';
+
 import { useState } from 'react';
-import { Plus, Search } from 'lucide-react';
-import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
-import { useAuthContext } from '@/contexts/AuthContext';
-import { collection, query, where, orderBy } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { useCollection } from 'react-firebase-hooks/firestore';
-import { Deck } from '@/types/firebase';
+import Link from 'next/link';
+import { Search, Plus } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { useDecks } from '@/hooks/useDecks';
 import { CreateDeckDialog } from '@/components/decks/CreateDeckDialog';
 
-export default function DecksPage() {
-  const { user } = useAuthContext();
+export default function Decks() {
+  const { user } = useAuth();
+  const { decks, loading } = useDecks();
   const [searchQuery, setSearchQuery] = useState('');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
-  const [decks, loading, error] = useCollection(
-    query(
-      collection(db, `users/${user?.uid}/decks`),
-      orderBy('updatedAt', 'desc')
-    )
+  const filteredDecks = decks?.filter(deck =>
+    deck.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const filteredDecks = decks?.docs.filter(doc => {
-    const deck = doc.data() as Deck;
-    return deck.title.toLowerCase().includes(searchQuery.toLowerCase());
-  });
+  if (!user) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+        <h1 className="text-2xl font-bold">Please sign in to view your decks</h1>
+        <Link href="/login" className="btn btn-primary">
+          Sign In
+        </Link>
+      </div>
+    );
+  }
 
   return (
-    <ProtectedRoute>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold tracking-tight">My Decks</h1>
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex flex-col gap-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <h1 className="text-3xl font-bold">Your Flashcard Decks</h1>
           <button
             onClick={() => setIsCreateDialogOpen(true)}
-            className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
+            className="btn btn-primary inline-flex items-center gap-2"
           >
-            <Plus className="mr-2 h-4 w-4" />
-            New Deck
+            <Plus className="w-4 h-4" />
+            Create Deck
           </button>
         </div>
 
-        <div className="flex items-center space-x-2">
-          <div className="relative flex-1">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="Search decks..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-md border border-input bg-background px-9 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-            />
-          </div>
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search decks..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+          />
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(6)].map((_, i) => (
               <div
                 key={i}
-                className="h-[200px] rounded-lg border bg-muted/10 p-6 animate-pulse"
+                className="animate-pulse bg-gray-200 dark:bg-gray-700 rounded-lg h-40"
               />
             ))}
           </div>
-        ) : error ? (
-          <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4">
-            <p className="text-sm text-destructive">Error loading decks. Please try again.</p>
+        ) : filteredDecks?.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-xl text-gray-600 dark:text-gray-400">
+              No flashcard decks found. Create your first deck to get started!
+            </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
-            {filteredDecks?.map((doc) => {
-              const deck = doc.data() as Deck;
-              return (
-                <div
-                  key={doc.id}
-                  className="group relative rounded-lg border p-6 hover:bg-muted/50 transition-colors"
-                >
-                  <div className="flex flex-col space-y-2">
-                    <h2 className="font-semibold">{deck.title}</h2>
-                    <p className="text-sm text-muted-foreground line-clamp-2">
-                      {deck.description}
-                    </p>
-                    <div className="mt-4 flex items-center text-sm text-muted-foreground">
-                      <span>{deck.cardCount} cards</span>
-                      <span className="mx-2">•</span>
-                      <span>Last updated {deck.updatedAt.toDate().toLocaleDateString()}</span>
-                    </div>
-                  </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredDecks?.map((deck) => (
+              <Link
+                key={deck.id}
+                href={`/review/${deck.id}`}
+                className="block p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg hover:shadow-xl transition-shadow"
+              >
+                <h3 className="text-xl font-semibold mb-2">{deck.title}</h3>
+                <p className="text-gray-600 dark:text-gray-400 mb-4">
+                  {deck.description}
+                </p>
+                <div className="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400">
+                  <span>{deck.cards?.length || 0} cards</span>
+                  <span>Last studied: {deck.lastStudied || 'Never'}</span>
                 </div>
-              );
-            })}
+              </Link>
+            ))}
           </div>
         )}
-
-        <CreateDeckDialog
-          isOpen={isCreateDialogOpen}
-          onClose={() => setIsCreateDialogOpen(false)}
-        />
       </div>
-    </ProtectedRoute>
+
+      <CreateDeckDialog
+        open={isCreateDialogOpen}
+        onClose={() => setIsCreateDialogOpen(false)}
+      />
+    </div>
   );
 } 

@@ -1,14 +1,7 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import {
-  User,
-  signInWithPopup,
-  GoogleAuthProvider,
-  signOut,
-  onAuthStateChanged,
-} from 'firebase/auth';
-import { auth } from '../config/firebase';
-import { LoadingSpinner } from '../components/common/LoadingSpinner';
-import { useAuth } from '@/hooks/useAuth';
+import { createContext, useContext, ReactNode, useState, useEffect } from 'react';
+import { User, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth';
+import { auth, googleProvider } from '@/lib/firebase';
+import { toast } from 'sonner';
 
 interface AuthContextType {
   user: User | null;
@@ -20,24 +13,6 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const auth = useAuth();
-
-  return (
-    <AuthContext.Provider value={auth}>
-      {children}
-    </AuthContext.Provider>
-  );
-}
-
-export function useAuthContext() {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuthContext must be used within an AuthProvider');
-  }
-  return context;
-}
-
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -50,36 +25,44 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return unsubscribe;
   }, []);
 
-  const signInWithGoogle = async () => {
-    const provider = new GoogleAuthProvider();
+  const handleSignInWithGoogle = async () => {
     try {
-      await signInWithPopup(auth, provider);
+      await signInWithPopup(auth, googleProvider);
+      toast.success('Successfully signed in!');
     } catch (error) {
       console.error('Error signing in with Google:', error);
-      throw error;
+      toast.error('Failed to sign in. Please try again.');
     }
   };
 
-  const logout = async () => {
+  const handleSignOut = async () => {
     try {
       await signOut(auth);
+      toast.success('Successfully signed out!');
     } catch (error) {
       console.error('Error signing out:', error);
-      throw error;
+      toast.error('Failed to sign out. Please try again.');
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <LoadingSpinner className="w-12 h-12" />
-      </div>
-    );
-  }
-
   return (
-    <AuthContext.Provider value={{ user, loading, signInWithGoogle, logout }}>
+    <AuthContext.Provider 
+      value={{
+        user,
+        loading,
+        signInWithGoogle: handleSignInWithGoogle,
+        signOut: handleSignOut,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
-}; 
+}
+
+export function useAuthContext() {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuthContext must be used within an AuthProvider');
+  }
+  return context;
+} 
