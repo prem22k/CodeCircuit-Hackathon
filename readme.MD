@@ -1,74 +1,46 @@
-## 🧠 Spaced Repetition Flashcard Engine — Project Summary
+# Getting Started with Create React App
 
-### 🎯 Problem Statement
+This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-In the age of information overload, students and lifelong learners struggle to retain knowledge over time. Traditional flashcard apps like Anki are powerful—but lack intuitive design, visual polish, and real-time learning motivation.
+## Available Scripts
 
----
+In the project directory, you can run:
 
-### 💡 Our Solution
+### `npm start`
 
-We’re building a **visually stunning, high-performance spaced repetition flashcard engine**—a platform where design meets science-backed learning.
+Runs the app in the development mode.\
+Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
-Built with modern UI/UX principles, this web app leverages the **Leitner or SM‑2 spaced repetition algorithm** to help users remember better, faster, and longer—all while enjoying the experience.
+The page will reload if you make edits.\
+You will also see any lint errors in the console.
 
----
+### `npm test`
 
-### 🛠️ Tech Stack
+Launches the test runner in the interactive watch mode.\
+See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
 
-* **Frontend**: React (with TypeScript), Tailwind CSS, Framer Motion, AOS
-* **State Management**: Zustand or Context API
-* **Charts**: Recharts
-* **Storage**: LocalStorage (Firebase optional for login sync)
-* **Dev Tooling**: Cursor (AI-Powered IDE), GitHub, Vercel
+### `npm run build`
 
----
+Builds the app for production to the `build` folder.\
+It correctly bundles React in production mode and optimizes the build for the best performance.
 
-### 🔧 What We’re Building (Key Modules)
+The build is minified and the filenames include the hashes.\
+Your app is ready to be deployed!
 
-#### 1. **Deck & Card Management**
+See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
 
-* Create, edit, and delete flashcard decks.
-* Cards include questions, answers, and review metadata.
+### `npm run eject`
 
-#### 2. **Spaced Repetition Engine**
+**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
 
-* Implements a modified Leitner/SM‑2 algorithm.
-* Tracks each card's mastery level and review intervals.
+If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
 
-#### 3. **Review Mode**
+Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
 
-* Flip-style flashcards with 3D animation.
-* "Know" / "Don’t Know" input drives the algorithm.
-* Progress bar, success feedback, and session stats.
+You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
 
-#### 4. **Dashboard & Analytics**
+## Learn More
 
-* Visual review history (Recharts bar + heatmap).
-* Upcoming cards summary.
-* Optional streaks and gamification.
+You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
 
-#### 5. **Theme & UX Enhancements**
-
-* Dark/light mode toggle.
-* Mobile-first responsive design.
-* Confetti and hover interactions for delightful experience.
-
----
-
-### 🧩 Bonus Innovations
-
-* AI-powered deck generator from pasted notes (stretch)
-* Firebase login for persistent sync (stretch)
-* Shareable decks with public URLs (stretch)
-
----
-
-### 🏆 Why This Can Win
-
-* **Functionally strong**: Real SRS logic backed by memory science.
-* **Visually premium**: Every screen looks elegant and responsive.
-* **Built with Cursor**: Rapid prototyping using AI coding workflows.
-* **Clear narrative**: Solves a real user pain point with delightful design and complete UX.
-
----
+To learn React, check out the [React documentation](https://reactjs.org/).
