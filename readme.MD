@@ -1,96 +1,116 @@
-# BrainBoost - Smart Flashcard App
+# 🧠 BrainBoost - Smart Flashcards
 
-A modern flashcard application built for the CodeCircuit Hackathon, featuring spaced repetition and intelligent learning algorithms.
+BrainBoost is a modern flashcard application that helps users learn and retain information using spaced repetition. Built with Next.js 14, Firebase, and Tailwind CSS, it combines beautiful UI/UX with science-backed learning techniques.
 
-## Environment Setup
+## ✨ Features
 
-This project uses Firebase for authentication and data storage. You'll need to set up your environment variables:
+### 🎯 Smart Learning
 
-1. Create a `.env.local` file in the root directory
-2. Copy the contents of `.env.example`
-3. Replace the placeholder values with your Firebase configuration
+- **Spaced Repetition System (SRS)** - Cards are reviewed at optimal intervals for maximum retention
+- **Performance Tracking** - Track your learning progress with detailed statistics
+- **Streak System** - Stay motivated with daily streaks and achievements
 
-```bash
-# Firebase Configuration
-NEXT_PUBLIC_FIREBASE_API_KEY=
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
-NEXT_PUBLIC_FIREBASE_APP_ID=
-NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=
-```
+### 🎨 Beautiful UI/UX
 
-⚠️ **Important**: Never commit your `.env.local` file or expose your API keys in the repository.
+- **Modern Design** - Clean, intuitive interface with smooth animations
+- **Dark Mode** - Full dark mode support for comfortable night-time studying
+- **Responsive** - Works perfectly on desktop, tablet, and mobile
+- **Animations** - Smooth transitions and card flip animations
 
-## Getting Started
+### 🔐 Authentication
 
-1. Install dependencies:
+- **Google Sign-in** - Quick and secure authentication
+- **Protected Routes** - Secure access to personal decks and progress
+- **Session Persistence** - Stay logged in across sessions
+
+### 📚 Deck Management
+
+- **Create Decks** - Organize cards into custom decks
+- **Edit & Delete** - Full control over your learning materials
+- **Card Management** - Add, edit, and delete cards within decks
+
+### 📊 Progress Tracking
+
+- **Dashboard** - View your learning statistics and progress
+- **Review History** - Track your performance over time
+- **Streak Calendar** - Visualize your learning consistency
+- **Performance Metrics** - Monitor your improvement
+
+## 🚀 Tech Stack
+
+- **Frontend**: Next.js 14, React, Tailwind CSS
+- **Backend**: Firebase (Authentication, Firestore)
+- **UI Components**: Headless UI, Framer Motion
+- **Charts**: Recharts
+- **Icons**: Lucide React
+- **Notifications**: Sonner
+
+## 🛠️ Getting Started
+
+1. Clone the repository
+2. Install dependencies:
    ```bash
    npm install
    ```
-
-2. Set up your Firebase project:
-   - Create a new project in Firebase Console
-   - Enable Authentication with Google provider
-   - Create a Firestore database
-   - Copy your Firebase configuration to `.env.local`
-
-3. Run the development server:
+3. Set up environment variables:
+   ```env
+   NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
+   NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_auth_domain
+   NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+   NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_storage_bucket
+   NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
+   NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
+   NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=your_measurement_id
+   ```
+4. Run the development server:
    ```bash
    npm run dev
    ```
 
-## Deployment
+## 📱 User Flow
 
-When deploying to Vercel:
-1. Add all environment variables in your Vercel project settings
-2. Ensure you've regenerated and are using secure API keys
-3. Never expose API keys in your code or commit history
+1. **Landing Page**
 
-# Getting Started with Create React App
+   - Introduction to BrainBoost
+   - Call-to-action for new users
+   - Sign in/Sign up options
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+2. **Authentication**
 
-## Available Scripts
+   - Google Sign-in
+   - Email/Password authentication
+   - Protected routes
 
-In the project directory, you can run:
+3. **Deck Management**
 
-### `npm start`
+   - Create new decks
+   - Add cards to decks
+   - Edit and delete decks
+   - View deck statistics
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+4. **Review Session**
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+   - Spaced repetition algorithm
+   - Card flip animations
+   - Performance rating system
+   - Progress tracking
 
-### `npm test`
+5. **Dashboard**
+   - Learning statistics
+   - Review history
+   - Streak tracking
+   - Performance metrics
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## 🤝 Contributing
 
-### `npm run build`
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## 📄 License
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## 🙏 Acknowledgments
 
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+- Built for the CodeCircuit Hackathon
+- Inspired by Anki and other spaced repetition systems
+- Thanks to all contributors and supporters
