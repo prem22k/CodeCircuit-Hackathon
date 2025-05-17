@@ -88,7 +88,6 @@ export default function DecksPage() {
       const newDeck = await createDeck({
         title: newDeckTitle,
         description: newDeckDescription,
-        cardCount: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
         userId: user!.id,
