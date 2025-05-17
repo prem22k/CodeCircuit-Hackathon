@@ -1,8 +1,7 @@
 'use client';
 
-import { Github, Twitter, Linkedin, Mail } from 'lucide-react';
+import { Github, X, Linkedin, Mail } from 'lucide-react';
 import Link from 'next/link';
-import { ThemeToggle } from './ThemeToggle';
 
 export function Footer() {
   return (
@@ -17,9 +16,7 @@ export function Footer() {
             <p className="text-gray-600 dark:text-gray-300 text-sm">
               Making learning smarter and more efficient with AI-powered flashcards.
             </p>
-            <div className="flex items-center space-x-4">
-              <ThemeToggle />
-            </div>
+            
           </div>
 
           {/* Quick Links */}
@@ -84,7 +81,7 @@ export function Footer() {
                 rel="noopener noreferrer"
                 className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
               >
-                <Twitter className="w-5 h-5" />
+                <X className="w-5 h-5" />
               </a>
               <a
                 href="https://linkedin.com"
