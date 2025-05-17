@@ -137,7 +137,7 @@ export default function DecksPage() {
     if (!confirm('Are you sure you want to delete this deck?')) return;
 
     try {
-      await deleteDeck(deckId);
+      await deleteDeck(user!.id, deckId);
       setDecks(decks.filter(deck => deck.id !== deckId));
       showToast.success('Deck deleted successfully!');
     } catch (error) {
