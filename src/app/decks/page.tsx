@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { 
@@ -24,7 +24,7 @@ import { Deck } from '@/types';
 import { Dialog } from '@headlessui/react';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { useAuth } from '@/contexts/AuthContext';
-import { showToast } from '@/components/common/Toast';
+import { useToast } from '@/components/common/Toast';
 import Tutorial from '@/components/Tutorial';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
@@ -40,6 +40,7 @@ export default function DecksPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const { theme } = useTheme();
+  const { showToast } = useToast();
   const [decks, setDecks] = useState<Deck[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -72,7 +73,7 @@ export default function DecksPage() {
       }
     } catch (error) {
       console.error('Error loading decks:', error);
-      showToast.error('Failed to load decks');
+      showToast('error', 'Failed to load decks');
     } finally {
       setLoading(false);
     }
@@ -80,7 +81,7 @@ export default function DecksPage() {
 
   const handleCreateDeck = async () => {
     if (!newDeckTitle.trim()) {
-      showToast.error('Please enter a deck title');
+      showToast('error', 'Please enter a deck title');
       return;
     }
 
@@ -94,16 +95,16 @@ export default function DecksPage() {
       setIsCreateModalOpen(false);
       setNewDeckTitle('');
       setNewDeckDescription('');
-      showToast.success('Deck created successfully!');
+      showToast('success', 'Deck created successfully!');
     } catch (error) {
       console.error('Error creating deck:', error);
-      showToast.error('Failed to create deck');
+      showToast('error', 'Failed to create deck');
     }
   };
 
   const handleEditDeck = async () => {
     if (!selectedDeck || !newDeckTitle.trim()) {
-      showToast.error('Please enter a deck title');
+      showToast('error', 'Please enter a deck title');
       return;
     }
 
@@ -126,10 +127,10 @@ export default function DecksPage() {
       setSelectedDeck(null);
       setNewDeckTitle('');
       setNewDeckDescription('');
-      showToast.success('Deck updated successfully!');
+      showToast('success', 'Deck updated successfully!');
     } catch (error) {
       console.error('Error updating deck:', error);
-      showToast.error('Failed to update deck');
+      showToast('error', 'Failed to update deck');
     }
   };
 
@@ -139,10 +140,10 @@ export default function DecksPage() {
     try {
       await deleteDeck(user!.id, deckId);
       setDecks(decks.filter(deck => deck.id !== deckId));
-      showToast.success('Deck deleted successfully!');
+      showToast('success', 'Deck deleted successfully!');
     } catch (error) {
       console.error('Error deleting deck:', error);
-      showToast.error('Failed to delete deck');
+      showToast('error', 'Failed to delete deck');
     }
   };
 
