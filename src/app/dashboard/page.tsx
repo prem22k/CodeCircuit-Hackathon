@@ -25,6 +25,9 @@ import {
   TrendingUp,
   ArrowRight
 } from 'lucide-react';
+import { CalendarHeatmap } from '@/components/CalendarHeatmap';
+import { StreakNotification } from '@/components/StreakNotification';
+import { useReviewHistory } from '@/hooks/useReviewHistory';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -38,6 +41,8 @@ export default function DashboardPage() {
     dueCards: 0,
     reviewStreak: 0
   });
+  const { dailyStats, streak, loading: historyLoading } = useReviewHistory();
+  const [lastReviewDate, setLastReviewDate] = useState<Date | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -87,6 +92,12 @@ export default function DashboardPage() {
           dueCards,
           reviewStreak: 0 // TODO: Implement streak tracking
         });
+
+        // Update last review date
+        if (dailyStats.length > 0) {
+          const lastReview = dailyStats[dailyStats.length - 1];
+          setLastReviewDate(new Date(lastReview.date));
+        }
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Failed to load dashboard data'));
       } finally {
@@ -132,6 +143,8 @@ export default function DashboardPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
+      <StreakNotification streak={streak} lastReviewDate={lastReviewDate} />
+      
       <h1 className="text-3xl font-bold mb-8">Dashboard</h1>
 
       {/* Stats Overview */}
@@ -203,6 +216,22 @@ export default function DashboardPage() {
           </div>
         </motion.div>
       </div>
+
+      {/* Calendar Heatmap */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="card p-6 mb-12"
+      >
+        <h2 className="text-xl font-bold mb-4">Review Activity</h2>
+        <CalendarHeatmap
+          data={dailyStats.map(stat => ({
+            date: stat.date,
+            value: stat.reviews
+          }))}
+        />
+      </motion.div>
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
