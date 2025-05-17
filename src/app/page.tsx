@@ -103,13 +103,12 @@ export default function HomePage() {
             >
               <div className="relative aspect-square max-w-lg mx-auto">
                 <Image
-                  src="https://images.unsplash.com/photo-1501504905252-473c47e087f8?q=80&w=1000"
-                  alt="Learning illustration"
+                  src="/studying.svg"
+                  alt="Student studying illustration"
                   fill
-                  className="object-cover rounded-2xl shadow-2xl"
+                  className="object-contain"
                   priority
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-2xl" />
               </div>
             </motion.div>
           </div>
