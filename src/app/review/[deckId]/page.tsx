@@ -9,6 +9,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, ArrowRight, RotateCcw, Check, X, Star } from 'lucide-react';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { Deck, Card } from '@/types/firebase';
+
+interface Deck {
+  id: string;
+  title: string;
+  cards: Card[];
+}
 
 export default function ReviewPage({ params }: { params: { deckId: string } }) {
   const deckId = params?.deckId as string;
@@ -172,11 +179,11 @@ export default function ReviewPage({ params }: { params: { deckId: string } }) {
                 >
                   <div className={`${isFlipped ? 'hidden' : 'block'}`}>
                     <h2 className="text-2xl font-bold mb-4">Question</h2>
-                    <p className="text-xl">{currentCard.question}</p>
+                    <p className="text-xl">{currentCard.front}</p>
                   </div>
                   <div className={`${isFlipped ? 'block' : 'hidden'}`}>
                     <h2 className="text-2xl font-bold mb-4">Answer</h2>
-                    <p className="text-xl">{currentCard.answer}</p>
+                    <p className="text-xl">{currentCard.back}</p>
                   </div>
                 </motion.div>
               </div>
