@@ -8,7 +8,7 @@ import { getDecks, createDeck, deleteDeck } from '@/utils/storage';
 import { Deck } from '@/types';
 import { Dialog } from '@headlessui/react';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContext';
 import { showToast } from '@/components/common/Toast';
 import Tutorial from '@/components/Tutorial';
 import { auth } from '@/lib/firebase';
@@ -18,7 +18,7 @@ export const dynamic = 'force-dynamic';
 
 export default function DecksPage() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [decks, setDecks] = useState<Deck[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -29,8 +29,10 @@ export default function DecksPage() {
   useEffect(() => {
     if (user) {
       loadDecks();
+    } else if (!authLoading) {
+      router.push('/login');
     }
-  }, [user]);
+  }, [user, authLoading, router]);
 
   const loadDecks = async () => {
     try {
@@ -94,12 +96,16 @@ export default function DecksPage() {
     localStorage.setItem('hasSeenTutorial', 'true');
   };
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className="flex justify-center items-center min-h-[60vh]">
         <LoadingSpinner className="w-12 h-12" />
       </div>
     );
+  }
+
+  if (!user) {
+    return null; // Will redirect in useEffect
   }
 
   return (
