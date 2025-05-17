@@ -209,17 +209,16 @@ export const createReviewSession = async (userId: string, session: Omit<ReviewSe
     ...session,
     userId: userId,
     startedAt: serverTimestamp(), // Use serverTimestamp for consistency
-    endedAt: null,
+    endedAt: undefined,
   }
   const docRef = await addDoc(sessionsRef, newSessionData);
   // Return data with client-side Date objects if serverTimestamp() was used
-  // Note: Data returned by addDoc doesn't include serverTimestamp values immediately.
   return {
     id: docRef.id,
     ...session,
     userId: userId,
     startedAt: new Date(),
-    endedAt: null,
+    endedAt: undefined,
   };
 };
 
