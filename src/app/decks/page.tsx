@@ -110,20 +110,22 @@ export default function DecksPage() {
     }
 
     try {
-      const updatedDeck = await updateDeck(selectedDeck.id, {
+      await updateDeck(selectedDeck.id, {
         ...selectedDeck,
         title: newDeckTitle,
         description: newDeckDescription,
         updatedAt: new Date(),
       });
 
-      if (!updatedDeck) {
-        throw new Error('Failed to update deck');
-      }
-
       setDecks(decks.map(deck => 
-        deck.id === selectedDeck.id ? updatedDeck : deck
+        deck.id === selectedDeck.id ? {
+          ...deck,
+          title: newDeckTitle,
+          description: newDeckDescription,
+          updatedAt: new Date(),
+        } : deck
       ));
+      
       setIsEditModalOpen(false);
       setSelectedDeck(null);
       setNewDeckTitle('');
