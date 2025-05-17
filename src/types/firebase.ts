@@ -15,11 +15,11 @@ export interface Card {
   back: string;
   createdAt: Timestamp;
   updatedAt: Timestamp;
-  box?: number;
-  nextReview?: Timestamp;
-  lastReview?: Timestamp;
-  easeFactor?: number;
-  consecutiveCorrect?: number;
+  box: number;
+  nextReview: Timestamp;
+  lastReview: Timestamp;
+  easeFactor: number;
+  consecutiveCorrect: number;
 }
 
 export interface Deck {
