@@ -28,6 +28,8 @@ import {
 import { CalendarHeatmap } from '@/components/CalendarHeatmap';
 import { StreakNotification } from '@/components/StreakNotification';
 import { useReviewHistory } from '@/hooks/useReviewHistory';
+import { db } from '@/lib/firebase';
+import { collection, getDocs } from 'firebase/firestore';
 
 export default function DashboardPage() {
   const router = useRouter();
