@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDecks } from '@/hooks/useDecks';
 import { useReviewHistory } from '@/hooks/useReviewHistory';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   BarChart, 
   Bar, 
@@ -15,7 +15,10 @@ import {
   Tooltip, 
   ResponsiveContainer,
   LineChart,
-  Line
+  Line,
+  PieChart,
+  Pie,
+  Cell
 } from 'recharts';
 import { 
   Calendar, 
@@ -27,13 +30,23 @@ import {
   Brain,
   Zap,
   Sparkles,
-  Flame
+  Flame,
+  Plus,
+  ChevronRight,
+  Bookmark,
+  Target,
+  Activity,
+  User,
+  Settings,
+  LogOut,
+  Edit
 } from 'lucide-react';
 import { CalendarHeatmap } from '@/components/CalendarHeatmap';
 import { StreakNotification } from '@/components/StreakNotification';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { db } from '@/lib/firebase';
 import { collection, getDocs } from 'firebase/firestore';
+import Image from 'next/image';
 
 interface Deck {
   id: string;
@@ -47,6 +60,8 @@ interface Deck {
   averagePerformance?: number;
 }
 
+const COLORS = ['#000000', '#333333', '#666666', '#999999'];
+
 export default function DashboardPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
@@ -59,6 +74,7 @@ export default function DashboardPage() {
   });
   const { dailyStats, streak, loading: historyLoading } = useReviewHistory('all');
   const [lastReviewDate, setLastReviewDate] = useState<Date | null>(null);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -81,6 +97,19 @@ export default function DashboardPage() {
     }
   }, [decks, streak]);
 
+  // Add click outside handler for profile dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.profile-dropdown')) {
+        setIsProfileOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   if (authLoading || decksLoading || historyLoading) {
     return (
       <div className="flex justify-center items-center min-h-[60vh]">
@@ -89,124 +118,415 @@ export default function DashboardPage() {
     );
   }
 
+  const performanceData = [
+    { name: 'Known', value: stats.averagePerformance },
+    { name: 'To Learn', value: 100 - stats.averagePerformance }
+  ];
+
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">Dashboard</h1>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6"
+          className="flex justify-between items-center mb-8 bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700"
         >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Total Cards</p>
-              <h3 className="text-2xl font-bold">{stats.totalCards}</h3>
-            </div>
-            <BookOpen className="w-8 h-8 text-primary-500" />
+          <div className="flex items-center space-x-3">
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Brain className="w-8 h-8 text-black dark:text-white" />
+            </motion.div>
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-black to-gray-600 dark:from-white dark:to-gray-400 bg-clip-text text-transparent">
+              BrainBoost
+            </h1>
           </div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6"
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Total Reviews</p>
-              <h3 className="text-2xl font-bold">{stats.totalReviews}</h3>
-            </div>
-            <Zap className="w-8 h-8 text-primary-500" />
-          </div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6"
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Average Performance</p>
-              <h3 className="text-2xl font-bold">{stats.averagePerformance.toFixed(1)}%</h3>
-            </div>
-            <Sparkles className="w-8 h-8 text-primary-500" />
-          </div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6"
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Current Streak</p>
-              <h3 className="text-2xl font-bold">{stats.reviewStreak} days</h3>
-            </div>
-            <Flame className="w-8 h-8 text-primary-500" />
-          </div>
-        </motion.div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6"
-        >
-          <h2 className="text-xl font-bold mb-4">Recent Activity</h2>
-          {dailyStats.length > 0 ? (
-            <div className="space-y-4">
-              {dailyStats.slice(0, 5).map((stat) => (
-                <div key={stat.date} className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <Calendar className="w-5 h-5 text-gray-400 mr-2" />
-                    <span>{new Date(stat.date).toLocaleDateString()}</span>
+          <div className="flex items-center space-x-6">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => router.push('/decks')}
+              className="text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white transition-colors flex items-center space-x-2"
+            >
+              <Bookmark className="w-5 h-5" />
+              <span>My Decks</span>
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => router.push('/review')}
+              className="text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white transition-colors flex items-center space-x-2"
+            >
+              <Target className="w-5 h-5" />
+              <span>Review</span>
+            </motion.button>
+            
+            {/* Profile Dropdown */}
+            <div className="relative profile-dropdown">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setIsProfileOpen(!isProfileOpen)}
+                className="flex items-center space-x-2 focus:outline-none"
+              >
+                {user?.photoURL ? (
+                  <Image
+                    src={user.photoURL}
+                    alt="Profile"
+                    width={32}
+                    height={32}
+                    className="rounded-full ring-2 ring-gray-200 dark:ring-gray-700"
+                  />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 flex items-center justify-center ring-2 ring-gray-200 dark:ring-gray-700">
+                    <User className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm text-gray-500">{stat.reviews} reviews</p>
-                    <p className="text-sm text-gray-500">{stat.averagePerformance.toFixed(1)}% avg</p>
-                  </div>
+                )}
+              </motion.button>
+
+              <AnimatePresence>
+                {isProfileOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    transition={{ type: "spring", duration: 0.3 }}
+                    className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 py-2 z-50"
+                  >
+                    <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">{user?.displayName || 'User'}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{user?.email}</p>
+                    </div>
+                    
+                    <div className="py-1">
+                      <motion.button
+                        whileHover={{ x: 4 }}
+                        onClick={() => {
+                          router.push('/profile');
+                          setIsProfileOpen(false);
+                        }}
+                        className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center space-x-2"
+                      >
+                        <User className="w-4 h-4" />
+                        <span>View Profile</span>
+                      </motion.button>
+                      
+                      <motion.button
+                        whileHover={{ x: 4 }}
+                        onClick={() => {
+                          router.push('/profile/edit');
+                          setIsProfileOpen(false);
+                        }}
+                        className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center space-x-2"
+                      >
+                        <Edit className="w-4 h-4" />
+                        <span>Edit Profile</span>
+                      </motion.button>
+                      
+                      <motion.button
+                        whileHover={{ x: 4 }}
+                        onClick={() => {
+                          router.push('/settings');
+                          setIsProfileOpen(false);
+                        }}
+                        className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center space-x-2"
+                      >
+                        <Settings className="w-4 h-4" />
+                        <span>Settings</span>
+                      </motion.button>
+                    </div>
+                    
+                    <div className="border-t border-gray-100 dark:border-gray-700 my-1" />
+                    
+                    <motion.button
+                      whileHover={{ x: 4 }}
+                      onClick={() => {
+                        router.push('/login');
+                        setIsProfileOpen(false);
+                      }}
+                      className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center space-x-2"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      <span>Sign Out</span>
+                    </motion.button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            whileHover={{ y: -5 }}
+            className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-all"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Total Cards</p>
+                <h3 className="text-3xl font-bold bg-gradient-to-r from-black to-gray-600 dark:from-white dark:to-gray-400 bg-clip-text text-transparent">
+                  {stats.totalCards}
+                </h3>
+              </div>
+              <div className="p-3 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 rounded-lg">
+                <BookOpen className="w-6 h-6 text-black dark:text-white" />
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            whileHover={{ y: -5 }}
+            className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-all"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Total Reviews</p>
+                <h3 className="text-3xl font-bold bg-gradient-to-r from-black to-gray-600 dark:from-white dark:to-gray-400 bg-clip-text text-transparent">
+                  {stats.totalReviews}
+                </h3>
+              </div>
+              <div className="p-3 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 rounded-lg">
+                <Target className="w-6 h-6 text-black dark:text-white" />
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            whileHover={{ y: -5 }}
+            className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-all"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Performance</p>
+                <h3 className="text-3xl font-bold bg-gradient-to-r from-black to-gray-600 dark:from-white dark:to-gray-400 bg-clip-text text-transparent">
+                  {stats.averagePerformance.toFixed(1)}%
+                </h3>
+              </div>
+              <div className="p-3 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 rounded-lg">
+                <Activity className="w-6 h-6 text-black dark:text-white" />
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            whileHover={{ y: -5 }}
+            className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-all"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Current Streak</p>
+                <h3 className="text-3xl font-bold bg-gradient-to-r from-black to-gray-600 dark:from-white dark:to-gray-400 bg-clip-text text-transparent">
+                  {stats.reviewStreak} days
+                </h3>
+              </div>
+              <div className="p-3 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 rounded-lg">
+                <Flame className="w-6 h-6 text-black dark:text-white" />
+              </div>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Main Content */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Recent Activity */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm"
+          >
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold bg-gradient-to-r from-black to-gray-600 dark:from-white dark:to-gray-400 bg-clip-text text-transparent">
+                Recent Activity
+              </h2>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="text-sm text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors flex items-center space-x-1"
+              >
+                <span>View All</span>
+                <ArrowRight className="w-4 h-4" />
+              </motion.button>
+            </div>
+            {dailyStats.length > 0 ? (
+              <div className="space-y-4">
+                {dailyStats.slice(0, 5).map((stat, index) => (
+                  <motion.div
+                    key={stat.date}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                  >
+                    <div className="flex items-center">
+                      <Calendar className="w-5 h-5 text-gray-400 mr-3" />
+                      <span className="text-gray-700 dark:text-gray-300">{new Date(stat.date).toLocaleDateString()}</span>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-medium text-black dark:text-white">{stat.reviews} reviews</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{stat.averagePerformance.toFixed(1)}% avg</p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="text-center py-12"
+              >
+                <div className="w-24 h-24 mx-auto mb-4 relative">
+                  <Image
+                    src="/studying.svg"
+                    alt="No activity"
+                    fill
+                    className="object-contain opacity-50"
+                  />
                 </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-gray-500">No recent activity</p>
-          )}
-        </motion.div>
+                <p className="text-gray-500 dark:text-gray-400 mb-4">No recent activity</p>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => router.push('/review')}
+                  className="px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors flex items-center space-x-2 mx-auto"
+                >
+                  <Zap className="w-4 h-4" />
+                  <span>Start Reviewing</span>
+                </motion.button>
+              </motion.div>
+            )}
+          </motion.div>
 
+          {/* Your Decks */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm"
+          >
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold bg-gradient-to-r from-black to-gray-600 dark:from-white dark:to-gray-400 bg-clip-text text-transparent">
+                Your Decks
+              </h2>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => router.push('/decks')}
+                className="text-sm text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors flex items-center space-x-1"
+              >
+                <span>View All</span>
+                <ArrowRight className="w-4 h-4" />
+              </motion.button>
+            </div>
+            {decks && decks.length > 0 ? (
+              <div className="space-y-4">
+                {decks.slice(0, 5).map((deck, index) => (
+                  <motion.div
+                    key={deck.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    onClick={() => router.push(`/decks/${deck.id}`)}
+                    className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors group"
+                  >
+                    <div className="flex items-center">
+                      <Bookmark className="w-5 h-5 text-gray-400 mr-3 group-hover:text-black dark:group-hover:text-white transition-colors" />
+                      <span className="text-gray-700 dark:text-gray-300 group-hover:text-black dark:group-hover:text-white transition-colors">
+                        {deck.title}
+                      </span>
+                    </div>
+                    <div className="flex items-center">
+                      <div className="text-right mr-4">
+                        <p className="text-sm font-medium text-black dark:text-white">{deck.cards?.length || 0} cards</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{deck.reviewCount || 0} reviews</p>
+                      </div>
+                      <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-black dark:group-hover:text-white transition-colors group-hover:translate-x-1" />
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="text-center py-12"
+              >
+                <div className="w-24 h-24 mx-auto mb-4 relative">
+                  <Image
+                    src="/studying.svg"
+                    alt="No decks"
+                    fill
+                    className="object-contain opacity-50"
+                  />
+                </div>
+                <p className="text-gray-500 dark:text-gray-400 mb-4">No decks yet</p>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => router.push('/decks')}
+                  className="px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors flex items-center space-x-2 mx-auto"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Create Your First Deck</span>
+                </motion.button>
+              </motion.div>
+            )}
+          </motion.div>
+        </div>
+
+        {/* Performance Chart */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6"
+          transition={{ delay: 0.6 }}
+          className="mt-8 bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm"
         >
-          <h2 className="text-xl font-bold mb-4">Your Decks</h2>
-          {decks && decks.length > 0 ? (
-            <div className="space-y-4">
-              {decks.slice(0, 5).map((deck) => (
-                <div key={deck.id} className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <Brain className="w-5 h-5 text-gray-400 mr-2" />
-                    <span>{deck.title}</span>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm text-gray-500">{deck.cards?.length || 0} cards</p>
-                    <p className="text-sm text-gray-500">{deck.reviewCount || 0} reviews</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-gray-500">No decks yet</p>
-          )}
+          <h2 className="text-xl font-bold bg-gradient-to-r from-black to-gray-600 dark:from-white dark:to-gray-400 bg-clip-text text-transparent mb-6">
+            Performance Overview
+          </h2>
+          <div className="h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={performanceData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  paddingAngle={5}
+                  dataKey="value"
+                  animationDuration={1000}
+                >
+                  {performanceData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: 'white',
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '0.5rem',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                  }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
         </motion.div>
       </div>
     </div>

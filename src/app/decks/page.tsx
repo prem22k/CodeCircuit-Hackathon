@@ -3,18 +3,37 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Plus, Pencil, Trash2, BookOpen } from 'lucide-react';
-import { getDecks, createDeck, deleteDeck } from '@/utils/storage';
+import { 
+  Plus, 
+  Pencil, 
+  Trash2, 
+  BookOpen, 
+  Search,
+  Filter,
+  SortAsc,
+  SortDesc,
+  ChevronRight,
+  X,
+  Brain,
+  Target,
+  Clock,
+  Calendar
+} from 'lucide-react';
+import { getDecks, createDeck, deleteDeck, updateDeck } from '@/utils/storage';
 import { Deck } from '@/types';
 import { Dialog } from '@headlessui/react';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { useAuth } from '@/contexts/AuthContext';
 import { showToast } from '@/components/common/Toast';
 import Tutorial from '@/components/Tutorial';
-import { auth } from '@/lib/firebase';
+import { motion, AnimatePresence } from 'framer-motion';
+import Image from 'next/image';
 
 // Mark this page as dynamic
 export const dynamic = 'force-dynamic';
+
+type SortOption = 'newest' | 'oldest' | 'name' | 'cards';
+type FilterOption = 'all' | 'recent' | 'empty';
 
 export default function DecksPage() {
   const router = useRouter();
@@ -22,9 +41,16 @@ export default function DecksPage() {
   const [decks, setDecks] = useState<Deck[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedDeck, setSelectedDeck] = useState<Deck | null>(null);
   const [newDeckTitle, setNewDeckTitle] = useState('');
   const [newDeckDescription, setNewDeckDescription] = useState('');
   const [showTutorial, setShowTutorial] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState<SortOption>('newest');
+  const [filterBy, setFilterBy] = useState<FilterOption>('all');
+  const [isSortOpen, setIsSortOpen] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -38,7 +64,6 @@ export default function DecksPage() {
     try {
       const userDecks = await getDecks(user!.id);
       setDecks(userDecks);
-      // Show tutorial for new users (no decks)
       const hasSeenTutorial = localStorage.getItem('hasSeenTutorial');
       if (!hasSeenTutorial) {
         setShowTutorial(true);
@@ -78,6 +103,34 @@ export default function DecksPage() {
     }
   };
 
+  const handleEditDeck = async () => {
+    if (!selectedDeck || !newDeckTitle.trim()) {
+      showToast.error('Please enter a deck title');
+      return;
+    }
+
+    try {
+      const updatedDeck = await updateDeck(selectedDeck.id, {
+        ...selectedDeck,
+        title: newDeckTitle,
+        description: newDeckDescription,
+        updatedAt: new Date(),
+      });
+
+      setDecks(decks.map(deck => 
+        deck.id === selectedDeck.id ? updatedDeck : deck
+      ));
+      setIsEditModalOpen(false);
+      setSelectedDeck(null);
+      setNewDeckTitle('');
+      setNewDeckDescription('');
+      showToast.success('Deck updated successfully!');
+    } catch (error) {
+      console.error('Error updating deck:', error);
+      showToast.error('Failed to update deck');
+    }
+  };
+
   const handleDeleteDeck = async (deckId: string) => {
     if (!confirm('Are you sure you want to delete this deck?')) return;
 
@@ -96,6 +149,30 @@ export default function DecksPage() {
     localStorage.setItem('hasSeenTutorial', 'true');
   };
 
+  const filteredAndSortedDecks = decks
+    .filter(deck => {
+      const matchesSearch = deck.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          deck.description.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesFilter = filterBy === 'all' ? true :
+                          filterBy === 'recent' ? (new Date().getTime() - new Date(deck.updatedAt).getTime()) < 7 * 24 * 60 * 60 * 1000 :
+                          deck.cardCount === 0;
+      return matchesSearch && matchesFilter;
+    })
+    .sort((a, b) => {
+      switch (sortBy) {
+        case 'newest':
+          return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+        case 'oldest':
+          return new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime();
+        case 'name':
+          return a.title.localeCompare(b.title);
+        case 'cards':
+          return b.cardCount - a.cardCount;
+        default:
+          return 0;
+      }
+    });
+
   if (authLoading || loading) {
     return (
       <div className="flex justify-center items-center min-h-[60vh]">
@@ -105,129 +182,372 @@ export default function DecksPage() {
   }
 
   if (!user) {
-    return null; // Will redirect in useEffect
+    return null;
   }
 
   return (
-    <div className="space-y-6">
-      {showTutorial && <Tutorial onComplete={handleTutorialComplete} />}
-      
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">My Decks</h1>
-        <button
-          onClick={() => setIsCreateModalOpen(true)}
-          className="btn btn-primary flex items-center gap-2"
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {showTutorial && <Tutorial onComplete={handleTutorialComplete} />}
+        
+        {/* Header */}
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex justify-between items-center mb-8 bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700"
         >
-          <Plus className="w-5 h-5" />
-          Create Deck
-        </button>
-      </div>
-
-      {decks.length === 0 ? (
-        <div className="text-center py-12">
-          <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold mb-2">No decks yet</h3>
-          <p className="text-gray-600 dark:text-gray-400 mb-4">
-            Create your first deck to start learning
-          </p>
-          <button
-            onClick={() => setIsCreateModalOpen(true)}
-            className="btn btn-primary"
-          >
-            Create Your First Deck
-          </button>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {decks.map((deck) => (
-            <div
-              key={deck.id}
-              className="card hover:shadow-lg transition-shadow duration-300"
+          <div className="flex items-center space-x-3">
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
-              <div className="p-6">
-                <h3 className="text-xl font-semibold mb-2">{deck.title}</h3>
-                <p className="text-gray-600 dark:text-gray-400 mb-4">
-                  {deck.description}
-                </p>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-500">
-                    {deck.cardCount} cards
-                  </span>
-                  <div className="flex gap-2">
-                    <Link
-                      href={`/decks/${deck.id}`}
-                      className="btn btn-sm btn-primary"
-                    >
-                      Study
-                    </Link>
-                    <button
-                      onClick={() => handleDeleteDeck(deck.id)}
-                      className="btn btn-sm btn-danger"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+              <Brain className="w-8 h-8 text-black dark:text-white" />
+            </motion.div>
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-black to-gray-600 dark:from-white dark:to-gray-400 bg-clip-text text-transparent">
+              My Decks
+            </h1>
+          </div>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setIsCreateModalOpen(true)}
+            className="px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors flex items-center space-x-2"
+          >
+            <Plus className="w-5 h-5" />
+            <span>Create Deck</span>
+          </motion.button>
+        </motion.div>
 
-      <Dialog
-        open={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        className="relative z-50"
-      >
-        <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
-        <div className="fixed inset-0 flex items-center justify-center p-4">
-          <Dialog.Panel className="card max-w-md w-full">
-            <Dialog.Title className="text-xl font-semibold mb-4">
-              Create New Deck
-            </Dialog.Title>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  Title
-                </label>
-                <input
-                  type="text"
-                  value={newDeckTitle}
-                  onChange={(e) => setNewDeckTitle(e.target.value)}
-                  className="input w-full"
-                  placeholder="Enter deck title"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  Description
-                </label>
-                <textarea
-                  value={newDeckDescription}
-                  onChange={(e) => setNewDeckDescription(e.target.value)}
-                  className="input w-full"
-                  placeholder="Enter deck description"
-                  rows={3}
-                />
-              </div>
-              <div className="flex justify-end gap-2">
+        {/* Search and Filters */}
+        <div className="mb-8 flex flex-col sm:flex-row gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search decks..."
+              className="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
+            />
+          </div>
+          <div className="flex gap-2">
+            <div className="relative">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setIsSortOpen(!isSortOpen)}
+                className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg flex items-center space-x-2"
+              >
+                <SortAsc className="w-5 h-5" />
+                <span>Sort</span>
+              </motion.button>
+              <AnimatePresence>
+                {isSortOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-10"
+                  >
+                    {['newest', 'oldest', 'name', 'cards'].map((option) => (
+                      <button
+                        key={option}
+                        onClick={() => {
+                          setSortBy(option as SortOption);
+                          setIsSortOpen(false);
+                        }}
+                        className={`w-full px-4 py-2 text-left text-sm ${
+                          sortBy === option
+                            ? 'bg-gray-100 dark:bg-gray-700 text-black dark:text-white'
+                            : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                        }`}
+                      >
+                        {option.charAt(0).toUpperCase() + option.slice(1)}
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+            <div className="relative">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setIsFilterOpen(!isFilterOpen)}
+                className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg flex items-center space-x-2"
+              >
+                <Filter className="w-5 h-5" />
+                <span>Filter</span>
+              </motion.button>
+              <AnimatePresence>
+                {isFilterOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-10"
+                  >
+                    {['all', 'recent', 'empty'].map((option) => (
+                      <button
+                        key={option}
+                        onClick={() => {
+                          setFilterBy(option as FilterOption);
+                          setIsFilterOpen(false);
+                        }}
+                        className={`w-full px-4 py-2 text-left text-sm ${
+                          filterBy === option
+                            ? 'bg-gray-100 dark:bg-gray-700 text-black dark:text-white'
+                            : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                        }`}
+                      >
+                        {option.charAt(0).toUpperCase() + option.slice(1)}
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
+        </div>
+
+        {filteredAndSortedDecks.length === 0 ? (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-center py-12 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700"
+          >
+            <div className="w-24 h-24 mx-auto mb-4 relative">
+              <Image
+                src="/studying.svg"
+                alt="No decks"
+                fill
+                className="object-contain opacity-50"
+              />
+            </div>
+            <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">
+              {searchQuery ? 'No matching decks found' : 'No decks yet'}
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">
+              {searchQuery ? 'Try adjusting your search or filters' : 'Create your first deck to start learning'}
+            </p>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setIsCreateModalOpen(true)}
+              className="px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors flex items-center space-x-2 mx-auto"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Create Your First Deck</span>
+            </motion.button>
+          </motion.div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <AnimatePresence>
+              {filteredAndSortedDecks.map((deck, index) => (
+                <motion.div
+                  key={deck.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ delay: index * 0.1 }}
+                  className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-all group"
+                >
+                  <div className="p-6">
+                    <div className="flex justify-between items-start mb-4">
+                      <h3 className="text-xl font-semibold text-gray-900 dark:text-white group-hover:text-black dark:group-hover:text-white transition-colors">
+                        {deck.title}
+                      </h3>
+                      <div className="flex gap-2">
+                        <motion.button
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          onClick={() => {
+                            setSelectedDeck(deck);
+                            setNewDeckTitle(deck.title);
+                            setNewDeckDescription(deck.description);
+                            setIsEditModalOpen(true);
+                          }}
+                          className="p-2 text-gray-400 hover:text-black dark:hover:text-white transition-colors"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </motion.button>
+                        <motion.button
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          onClick={() => handleDeleteDeck(deck.id)}
+                          className="p-2 text-gray-400 hover:text-red-500 transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </motion.button>
+                      </div>
+                    </div>
+                    <p className="text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">
+                      {deck.description}
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-4">
+                        <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                          <BookOpen className="w-4 h-4 mr-1" />
+                          {deck.cardCount} cards
+                        </div>
+                        <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                          <Clock className="w-4 h-4 mr-1" />
+                          {new Date(deck.updatedAt).toLocaleDateString()}
+                        </div>
+                      </div>
+                      <motion.div
+                        whileHover={{ x: 4 }}
+                        className="flex items-center text-sm text-gray-500 dark:text-gray-400 group-hover:text-black dark:group-hover:text-white transition-colors"
+                      >
+                        <Link href={`/decks/${deck.id}`} className="flex items-center">
+                          Study
+                          <ChevronRight className="w-4 h-4 ml-1" />
+                        </Link>
+                      </motion.div>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+        )}
+
+        {/* Create Deck Modal */}
+        <Dialog
+          open={isCreateModalOpen}
+          onClose={() => setIsCreateModalOpen(false)}
+          className="relative z-50"
+        >
+          <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" aria-hidden="true" />
+          <div className="fixed inset-0 flex items-center justify-center p-4">
+            <Dialog.Panel className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 max-w-md w-full p-6">
+              <div className="flex justify-between items-center mb-6">
+                <Dialog.Title className="text-xl font-semibold text-gray-900 dark:text-white">
+                  Create New Deck
+                </Dialog.Title>
                 <button
                   onClick={() => setIsCreateModalOpen(false)}
-                  className="btn btn-secondary"
+                  className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300"
                 >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleCreateDeck}
-                  className="btn btn-primary"
-                >
-                  Create Deck
+                  <X className="w-5 h-5" />
                 </button>
               </div>
-            </div>
-          </Dialog.Panel>
-        </div>
-      </Dialog>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Title
+                  </label>
+                  <input
+                    type="text"
+                    value={newDeckTitle}
+                    onChange={(e) => setNewDeckTitle(e.target.value)}
+                    className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
+                    placeholder="Enter deck title"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Description
+                  </label>
+                  <textarea
+                    value={newDeckDescription}
+                    onChange={(e) => setNewDeckDescription(e.target.value)}
+                    className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
+                    placeholder="Enter deck description"
+                    rows={3}
+                  />
+                </div>
+                <div className="flex justify-end gap-2 pt-4">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setIsCreateModalOpen(false)}
+                    className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                  >
+                    Cancel
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={handleCreateDeck}
+                    className="px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors"
+                  >
+                    Create Deck
+                  </motion.button>
+                </div>
+              </div>
+            </Dialog.Panel>
+          </div>
+        </Dialog>
+
+        {/* Edit Deck Modal */}
+        <Dialog
+          open={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          className="relative z-50"
+        >
+          <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" aria-hidden="true" />
+          <div className="fixed inset-0 flex items-center justify-center p-4">
+            <Dialog.Panel className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 max-w-md w-full p-6">
+              <div className="flex justify-between items-center mb-6">
+                <Dialog.Title className="text-xl font-semibold text-gray-900 dark:text-white">
+                  Edit Deck
+                </Dialog.Title>
+                <button
+                  onClick={() => setIsEditModalOpen(false)}
+                  className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Title
+                  </label>
+                  <input
+                    type="text"
+                    value={newDeckTitle}
+                    onChange={(e) => setNewDeckTitle(e.target.value)}
+                    className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
+                    placeholder="Enter deck title"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Description
+                  </label>
+                  <textarea
+                    value={newDeckDescription}
+                    onChange={(e) => setNewDeckDescription(e.target.value)}
+                    className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
+                    placeholder="Enter deck description"
+                    rows={3}
+                  />
+                </div>
+                <div className="flex justify-end gap-2 pt-4">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setIsEditModalOpen(false)}
+                    className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                  >
+                    Cancel
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={handleEditDeck}
+                    className="px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors"
+                  >
+                    Save Changes
+                  </motion.button>
+                </div>
+              </div>
+            </Dialog.Panel>
+          </div>
+        </Dialog>
+      </div>
     </div>
   );
 } 
