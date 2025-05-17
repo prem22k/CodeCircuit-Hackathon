@@ -2,10 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { auth } from '@/config/firebase';
+import { auth } from '@/lib/firebase';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { Brain, Mail, Lock, User, ArrowRight } from 'lucide-react';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+
+// Mark this page as dynamic
+export const dynamic = 'force-dynamic';
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -18,14 +21,14 @@ export default function AuthPage() {
 
   useEffect(() => {
     // Check if user is already logged in
-    const unsubscribe = auth.onAuthStateChanged((user) => {
+    const unsubscribe = auth?.onAuthStateChanged((user) => {
       if (user) {
         router.push('/decks');
       }
       setIsLoading(false);
     });
 
-    return () => unsubscribe();
+    return () => unsubscribe?.();
   }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -34,9 +37,9 @@ export default function AuthPage() {
 
     try {
       if (isLogin) {
-        await signInWithEmailAndPassword(auth, email, password);
+        await signInWithEmailAndPassword(auth!, email, password);
       } else {
-        await createUserWithEmailAndPassword(auth, email, password);
+        await createUserWithEmailAndPassword(auth!, email, password);
       }
       router.push('/decks');
     } catch (err: any) {
@@ -47,7 +50,7 @@ export default function AuthPage() {
   const handleGoogleSignIn = async () => {
     try {
       const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
+      await signInWithPopup(auth!, provider);
       router.push('/decks');
     } catch (err: any) {
       setError(err.message);

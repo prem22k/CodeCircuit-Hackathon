@@ -9,6 +9,10 @@ import { Dialog } from '@headlessui/react';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { showToast } from '@/components/common/Toast';
 import Tutorial from '@/components/Tutorial';
+import { auth } from '@/lib/firebase';
+
+// Mark this page as dynamic
+export const dynamic = 'force-dynamic';
 
 export default function DecksPage() {
   const [decks, setDecks] = useState<Deck[]>([]);
@@ -20,12 +24,21 @@ export default function DecksPage() {
   const [showTutorial, setShowTutorial] = useState(false);
 
   useEffect(() => {
-    loadDecks();
-    // Show tutorial for new users (no decks)
-    const hasSeenTutorial = localStorage.getItem('hasSeenTutorial');
-    if (!hasSeenTutorial) {
-      setShowTutorial(true);
-    }
+    // Check if user is authenticated
+    const unsubscribe = auth?.onAuthStateChanged((user) => {
+      if (!user) {
+        window.location.href = '/login';
+      } else {
+        loadDecks();
+        // Show tutorial for new users (no decks)
+        const hasSeenTutorial = localStorage.getItem('hasSeenTutorial');
+        if (!hasSeenTutorial) {
+          setShowTutorial(true);
+        }
+      }
+    });
+
+    return () => unsubscribe?.();
   }, []);
 
   const loadDecks = async () => {
