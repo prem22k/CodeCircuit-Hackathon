@@ -101,7 +101,7 @@ export default function HomePage() {
                     href="/login"
                     className="px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-lg font-semibold shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center group"
                   >
-                    Get Started
+            Get Started
                     <ChevronRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                   </Link>
                 )}
@@ -111,7 +111,7 @@ export default function HomePage() {
                 >
                   View Dashboard
                   <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-                </Link>
+          </Link>
               </motion.div>
             </motion.div>
 

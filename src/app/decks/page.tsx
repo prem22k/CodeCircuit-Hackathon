@@ -228,10 +228,10 @@ export default function DecksPage() {
         <div className="mb-8 flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search decks..."
               className="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
             />
@@ -329,7 +329,7 @@ export default function DecksPage() {
                 fill
                 className="object-contain opacity-50"
               />
-            </div>
+          </div>
             <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">
               {searchQuery ? 'No matching decks found' : 'No decks yet'}
             </h3>
@@ -351,7 +351,7 @@ export default function DecksPage() {
             <AnimatePresence>
               {filteredAndSortedDecks.map((deck, index) => (
                 <motion.div
-                  key={deck.id}
+                key={deck.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95 }}
@@ -388,8 +388,8 @@ export default function DecksPage() {
                       </div>
                     </div>
                     <p className="text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">
-                      {deck.description}
-                    </p>
+                  {deck.description}
+                </p>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-4">
                         <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
@@ -400,7 +400,7 @@ export default function DecksPage() {
                           <Clock className="w-4 h-4 mr-1" />
                           {new Date(deck.updatedAt).toLocaleDateString()}
                         </div>
-                      </div>
+                </div>
                       <motion.div
                         whileHover={{ x: 4 }}
                         className="flex items-center text-sm text-gray-500 dark:text-gray-400 group-hover:text-black dark:group-hover:text-white transition-colors"
@@ -408,12 +408,12 @@ export default function DecksPage() {
                         <Link href={`/decks/${deck.id}`} className="flex items-center">
                           Study
                           <ChevronRight className="w-4 h-4 ml-1" />
-                        </Link>
+              </Link>
                       </motion.div>
                     </div>
                   </div>
                 </motion.div>
-              ))}
+            ))}
             </AnimatePresence>
           </div>
         )}
