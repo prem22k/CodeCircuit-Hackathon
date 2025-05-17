@@ -110,7 +110,7 @@ export default function ReviewPage({ params }: { params: { deckId: string } }) {
       await processCardReview(currentCard.id, rating);
 
       // Record review history
-      const reviewHistoryRef = collection(db, 'users', user.uid, 'reviewHistory');
+      const reviewHistoryRef = collection(db, 'users', user.id, 'reviewHistory');
       await addDoc(reviewHistoryRef, {
         deckId,
         cardId: currentCard.id,
