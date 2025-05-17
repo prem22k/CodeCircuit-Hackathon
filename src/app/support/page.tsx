@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Mail, HelpCircle, FileText } from 'lucide-react';
+import { Mail, HelpCircle, FileText, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
 export default function SupportPage() {
