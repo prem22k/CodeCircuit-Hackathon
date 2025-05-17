@@ -26,6 +26,12 @@ export interface Deck {
   updatedAt: Timestamp;
   lastStudied?: Timestamp;
   userId: string;
+  reviewCount?: number;
+  averagePerformance?: number;
+  totalReviews?: number;
+  cardsMastered?: number;
+  cardsLearning?: number;
+  cardsNotStarted?: number;
 }
 
 export interface ReviewSession {

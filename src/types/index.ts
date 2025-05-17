@@ -15,6 +15,12 @@ export interface Deck {
   userId: string;
   tags?: string[];
   isPublic?: boolean;
+  reviewCount?: number;
+  averagePerformance?: number;
+  totalReviews?: number;
+  cardsMastered?: number;
+  cardsLearning?: number;
+  cardsNotStarted?: number;
 }
 
 export interface Card {

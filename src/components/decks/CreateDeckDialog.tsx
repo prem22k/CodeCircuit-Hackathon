@@ -42,6 +42,12 @@ export function CreateDeckDialog({ open, onClose }: CreateDeckDialogProps) {
         cards: [],
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
+        reviewCount: 0,
+        averagePerformance: 0,
+        totalReviews: 0,
+        cardsMastered: 0,
+        cardsLearning: 0,
+        cardsNotStarted: 0
       });
 
       toast.success('Deck created successfully!');
