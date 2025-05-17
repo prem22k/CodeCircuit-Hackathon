@@ -28,6 +28,7 @@ import { showToast } from '@/components/common/Toast';
 import Tutorial from '@/components/Tutorial';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
+import { useTheme } from 'next-themes';
 
 // Mark this page as dynamic
 export const dynamic = 'force-dynamic';
@@ -38,6 +39,7 @@ type FilterOption = 'all' | 'recent' | 'empty';
 export default function DecksPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
+  const { theme } = useTheme();
   const [decks, setDecks] = useState<Deck[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
