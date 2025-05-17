@@ -171,55 +171,62 @@ export function NavBar() {
                       animate="visible"
                       exit="exit"
                       variants={profileVariants}
-                      className="absolute right-0 mt-2 w-64 rounded-lg bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+                      className="absolute right-0 mt-2 w-64 rounded-lg bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none overflow-hidden"
                     >
                       <div className="py-1">
-                        <div className="px-4 py-2 border-b border-gray-100 dark:border-gray-700">
+                        <motion.div
+                          whileHover={{ backgroundColor: 'rgba(99, 102, 241, 0.05)' }}
+                          className="px-4 py-2 border-b border-gray-100 dark:border-gray-700 cursor-pointer"
+                          onClick={() => {
+                            router.push('/profile');
+                            setIsProfileOpen(false);
+                          }}
+                        >
                           <p className="text-sm font-medium text-gray-900 dark:text-white">
                             {user.displayName || user.email?.split('@')[0] || 'User'}
                           </p>
                           <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
                             {user.email}
                           </p>
-                        </div>
+                        </motion.div>
                         <motion.button
-                          whileHover={{ x: 4 }}
+                          whileHover={{ x: 4, backgroundColor: 'rgba(99, 102, 241, 0.05)' }}
                           onClick={() => {
                             router.push('/profile');
                             setIsProfileOpen(false);
                           }}
-                          className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 flex items-center space-x-2"
+                          className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 flex items-center space-x-2"
                         >
                           <User className="w-4 h-4" />
                           <span>View Profile</span>
                         </motion.button>
                         <motion.button
-                          whileHover={{ x: 4 }}
+                          whileHover={{ x: 4, backgroundColor: 'rgba(99, 102, 241, 0.05)' }}
                           onClick={() => {
                             router.push('/profile/edit');
                             setIsProfileOpen(false);
                           }}
-                          className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 flex items-center space-x-2"
+                          className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 flex items-center space-x-2"
                         >
                           <Edit className="w-4 h-4" />
                           <span>Edit Profile</span>
                         </motion.button>
                         <motion.button
-                          whileHover={{ x: 4 }}
+                          whileHover={{ x: 4, backgroundColor: 'rgba(99, 102, 241, 0.05)' }}
                           onClick={() => {
                             router.push('/settings');
                             setIsProfileOpen(false);
                           }}
-                          className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 flex items-center space-x-2"
+                          className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 flex items-center space-x-2"
                         >
                           <Settings className="w-4 h-4" />
                           <span>Settings</span>
                         </motion.button>
                         <div className="border-t border-gray-100 dark:border-gray-700 my-1" />
                         <motion.button
-                          whileHover={{ x: 4 }}
+                          whileHover={{ x: 4, backgroundColor: 'rgba(239, 68, 68, 0.05)' }}
                           onClick={handleSignOut}
-                          className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 flex items-center space-x-2"
+                          className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 flex items-center space-x-2"
                         >
                           <LogOut className="w-4 h-4" />
                           <span>Sign Out</span>
