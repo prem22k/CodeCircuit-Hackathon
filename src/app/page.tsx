@@ -5,6 +5,7 @@ import { Brain, BookOpen, Zap, Sparkles, ArrowRight, ChevronRight, Plus, FileTex
 import { useAuth } from '@/contexts/AuthContext';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
+import Link from 'next/link';
 
 export default function HomePage() {
   const router = useRouter();
@@ -35,78 +36,97 @@ export default function HomePage() {
   return (
     <div className="space-y-24">
       {/* Hero Section */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary-50 to-primary-100 dark:from-primary-900/20 dark:to-primary-800/20" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+      <div className="relative overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <motion.div 
-              className="space-y-8"
-              initial={{ opacity: 0, x: -20 }}
+              className="space-y-6 text-center lg:text-left"
+              initial={{ opacity: 0, x: -50 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5 }}
+              transition={{ duration: 0.8 }}
             >
-              <div className="inline-flex items-center px-4 py-2 rounded-full bg-primary-100 dark:bg-primary-900 text-primary-600 dark:text-primary-400">
+              <motion.div
+                 initial={{ opacity: 0, y: 10 }}
+                 animate={{ opacity: 1, y: 0 }}
+                 transition={{ duration: 0.5, delay: 0.2 }}
+                 className="inline-flex items-center px-4 py-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium"
+              >
                 <Brain className="w-5 h-5 mr-2" />
-                <span className="text-sm font-medium">Smart Learning Platform</span>
-              </div>
+                <span>Smart Learning Platform</span>
+              </motion.div>
               
-              <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight">
+              <motion.h1
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+                className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight bg-gradient-to-r from-black to-gray-600 dark:from-white dark:to-gray-400 bg-clip-text text-transparent"
+              >
                 Learn Smarter with{' '}
-                <span className="text-primary-500 relative">
+                <span className="relative">
                   BrainBoost
                   <motion.span
-                    className="absolute -bottom-2 left-0 w-full h-1 bg-primary-500"
+                    className="absolute -bottom-2 left-0 w-full h-1 bg-black dark:bg-white"
                     initial={{ scaleX: 0 }}
                     animate={{ scaleX: 1 }}
-                    transition={{ duration: 0.5, delay: 0.8 }}
+                    transition={{ duration: 0.5, delay: 1.0 }}
                   />
                 </span>
-              </h1>
+              </motion.h1>
               
-              <p className="text-xl text-gray-600 dark:text-gray-400">
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.6 }}
+                className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl lg:max-w-none mx-auto lg:mx-0"
+              >
                 Create AI-powered flashcards, study efficiently, and master any subject with our smart learning platform.
-              </p>
+              </motion.p>
               
-              <div className="flex flex-col sm:flex-row gap-4">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.8 }}
+                className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
+              >
                 {user ? (
-                  <button
-                    onClick={() => router.push('/decks')}
-                    className="btn btn-primary btn-lg group bg-primary-500 hover:bg-primary-600 text-white px-8 py-4 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+                  <Link
+                    href="/decks"
+                    className="px-8 py-3 bg-black dark:bg-white text-white dark:text-black rounded-lg font-semibold shadow-md hover:shadow-lg transition-shadow flex items-center justify-center group"
                   >
                     My Decks
                     <ChevronRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-                  </button>
+                  </Link>
                 ) : (
-                  <button
-                    onClick={() => router.push('/login')}
-                    className="btn btn-primary btn-lg group bg-primary-500 hover:bg-primary-600 text-white px-8 py-4 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+                  <Link
+                    href="/login"
+                    className="px-8 py-3 bg-black dark:bg-white text-white dark:text-black rounded-lg font-semibold shadow-md hover:shadow-lg transition-shadow flex items-center justify-center group"
                   >
                     Get Started
                     <ChevronRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-                  </button>
+                  </Link>
                 )}
-                <button
-                  onClick={() => router.push('/dashboard')}
-                  className="btn btn-outline btn-lg group border-2 border-primary-500 text-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20 px-8 py-4 rounded-lg font-semibold transition-all duration-300"
+                <Link
+                  href="/dashboard"
+                  className="px-8 py-3 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg font-semibold hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center justify-center group"
                 >
                   View Dashboard
                   <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-                </button>
-              </div>
+                </Link>
+              </motion.div>
             </motion.div>
 
             <motion.div
-              initial={{ opacity: 0, x: 20 }}
+              initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="relative"
+              transition={{ duration: 0.8, delay: 0.4 }}
+              className="relative flex justify-center lg:justify-end"
             >
-              <div className="relative aspect-square max-w-lg mx-auto">
+              <div className="relative aspect-square max-w-sm lg:max-w-lg w-full">
                 <Image
                   src="/studying.svg"
                   alt="Student studying illustration"
                   fill
-                  className="object-contain"
+                  className="object-contain drop-shadow-lg"
                   priority
                 />
               </div>
