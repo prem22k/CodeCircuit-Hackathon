@@ -67,7 +67,7 @@ export const createDeck = async (userId: string, deck: Omit<Deck, 'id' | 'userId
     cards: [], // Cards are in subcollection
     createdAt: serverTimestamp(), // Use serverTimestamp for consistency
     updatedAt: serverTimestamp(), // Use serverTimestamp for consistency
-    lastStudied: null,
+    lastStudied: undefined,
     reviewCount: 0,
     averagePerformance: 0,
     totalReviews: 0,
@@ -89,7 +89,7 @@ export const createDeck = async (userId: string, deck: Omit<Deck, 'id' | 'userId
     cards: [],
     createdAt: new Date(), 
     updatedAt: new Date(), 
-    lastStudied: null,
+    lastStudied: undefined,
     reviewCount: 0,
     averagePerformance: 0,
     totalReviews: 0,
