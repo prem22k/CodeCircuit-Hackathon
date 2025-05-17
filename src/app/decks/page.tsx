@@ -88,9 +88,17 @@ export default function DecksPage() {
       const newDeck = await createDeck({
         title: newDeckTitle,
         description: newDeckDescription,
+        userId: user!.id,
+        cards: [],
         createdAt: new Date(),
         updatedAt: new Date(),
-        userId: user!.id,
+        lastStudied: undefined,
+        reviewCount: 0,
+        averagePerformance: 0,
+        totalReviews: 0,
+        cardsMastered: 0,
+        cardsLearning: 0,
+        cardsNotStarted: 0,
       });
 
       setDecks([newDeck, ...decks]);
