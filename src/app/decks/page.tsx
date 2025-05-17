@@ -170,7 +170,7 @@ export default function DecksPage() {
                           deck.description.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesFilter = filterBy === 'all' ? true :
                           filterBy === 'recent' ? (new Date().getTime() - new Date(deck.updatedAt).getTime()) < 7 * 24 * 60 * 60 * 1000 :
-                          deck.cardCount === 0;
+                          deck.cards.length === 0;
       return matchesSearch && matchesFilter;
     })
     .sort((a, b) => {
@@ -182,7 +182,7 @@ export default function DecksPage() {
         case 'name':
           return a.title.localeCompare(b.title);
         case 'cards':
-          return b.cardCount - a.cardCount;
+          return b.cards.length - a.cards.length;
         default:
           return 0;
       }
@@ -409,7 +409,7 @@ export default function DecksPage() {
                       <div className="flex items-center space-x-4">
                         <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
                           <BookOpen className="w-4 h-4 mr-1.5" />
-                          {deck.cardCount} cards
+                          {deck.cards.length} cards
                         </div>
                         <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
                           <Clock className="w-4 h-4 mr-1.5" />
