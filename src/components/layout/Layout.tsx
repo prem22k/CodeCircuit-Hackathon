@@ -2,8 +2,10 @@
 
 import { ReactNode } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Header } from './Header';
+import { NavBar } from './NavBar';
+import { Footer } from '@/components/Footer';
 import { Loader2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface LayoutProps {
   children: ReactNode;
@@ -14,28 +16,39 @@ export function Layout({ children }: LayoutProps) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary-500" />
-      </div>
+      <motion.div
+        key="loading"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900"
+      >
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+        >
+          <Loader2 className="h-12 w-12 text-indigo-500 dark:text-indigo-400" />
+        </motion.div>
+      </motion.div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Header />
-      <main className="flex-1 container py-8">
-        {children}
-      </main>
-      <footer className="border-t py-6 md:py-0">
-        <div className="container flex flex-col items-center justify-between gap-4 md:h-16 md:flex-row">
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            Built with ❤️ for CodeCircuit Hackathon
-          </p>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            © 2024 BrainBoost. All rights reserved.
-          </p>
-        </div>
-      </footer>
-    </div>
+    <AnimatePresence mode="wait">
+      <motion.div
+        key="layout"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.3 }}
+        className="min-h-screen flex flex-col"
+      >
+        <NavBar />
+        <main className="flex-1 container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {children}
+        </main>
+        <Footer />
+      </motion.div>
+    </AnimatePresence>
   );
 } 

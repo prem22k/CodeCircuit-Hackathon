@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
-import { Brain, Menu, X, User, LogOut, Settings, ChevronDown, Edit, Sun, Moon } from 'lucide-react';
+import { Brain, Menu, X, User, LogOut, Settings, ChevronDown, Edit, Sun, Moon, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -15,7 +15,6 @@ export function NavBar() {
   const { theme, setTheme } = useTheme();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [isHovering, setIsHovering] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
 
   // Close profile dropdown when clicking outside
@@ -51,26 +50,27 @@ export function NavBar() {
   };
 
   const profileVariants = {
-    hidden: { 
+    hidden: {
       opacity: 0,
       scale: 0.95,
       y: -10,
-      boxShadow: '0 0 0 0 rgba(99, 102, 241, 0)'
+      filter: 'blur(5px)'
     },
-    visible: { 
+    visible: {
       opacity: 1,
       scale: 1,
       y: 0,
-      boxShadow: '0 0 0 4px rgba(99, 102, 241, 0.1)',
+      filter: 'blur(0px)',
       transition: {
         duration: 0.2,
         ease: 'easeOut'
       }
     },
-    exit: { 
+    exit: {
       opacity: 0,
       scale: 0.95,
       y: -10,
+      filter: 'blur(5px)',
       transition: {
         duration: 0.15,
         ease: 'easeIn'
@@ -99,44 +99,64 @@ export function NavBar() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex md:items-center md:space-x-6">
-            <Link
-              href="/decks"
-              className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
-            >
-              My Decks
-            </Link>
-            <Link
-              href="/review"
-              className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
-            >
-              Review
-            </Link>
-            
+            <motion.div whileHover={{ y: -2 }} transition={{ type: "spring", stiffness: 400, damping: 10 }}>
+              <Link
+                href="/decks"
+                className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+              >
+                My Decks
+              </Link>
+            </motion.div>
+            <motion.div whileHover={{ y: -2 }} transition={{ type: "spring", stiffness: 400, damping: 10 }}>
+              <Link
+                href="/review"
+                className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+              >
+                Review
+              </Link>
+            </motion.div>
+
             {/* Theme Switch Button */}
             <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              transition={{ type: "spring", stiffness: 400, damping: 17 }}
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
               className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
               aria-label="Toggle theme"
             >
               {theme === 'dark' ? (
-                <Sun className="w-5 h-5" />
+                <motion.div
+                  key="sun"
+                  initial={{ rotate: 0, opacity: 0.5 }}
+                  animate={{ rotate: 360, opacity: 1 }}
+                  exit={{ rotate: 0, opacity: 0.5 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  <Sun className="w-5 h-5" />
+                </motion.div>
               ) : (
-                <Moon className="w-5 h-5" />
+                <motion.div
+                  key="moon"
+                  initial={{ rotate: 0, opacity: 0.5 }}
+                  animate={{ rotate: 360, opacity: 1 }}
+                  exit={{ rotate: 0, opacity: 0.5 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  <Moon className="w-5 h-5" />
+                </motion.div>
               )}
             </motion.button>
 
             {user ? (
               <div className="relative" ref={profileRef}>
-                <div 
+                <div
                   className="flex items-center space-x-2 cursor-pointer"
-                  onMouseEnter={() => setIsHovering(true)}
-                  onMouseLeave={() => setIsHovering(false)}
                 >
                   <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
                     onClick={() => setIsProfileOpen(!isProfileOpen)}
                     className="flex items-center space-x-2 focus:outline-none group"
                   >
@@ -154,31 +174,20 @@ export function NavBar() {
                         </div>
                       ) : (
                         <div className="relative">
-                          <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center text-indigo-600 dark:text-indigo-400 group-hover:ring-2 group-hover:ring-indigo-500/20 transition-all duration-300">
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center text-indigo-600 dark:text-indigo-400 ring-2 ring-gray-200 dark:ring-gray-700 group-hover:ring-indigo-500/20 transition-all duration-300"
+                          >
                             {getInitials(user.displayName)}
-                          </div>
+                          </motion.div>
                           <div className="absolute inset-0 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300" />
                         </div>
                       )}
                     </div>
                   </motion.button>
 
-                  {/* Username on Hover */}
-                  <AnimatePresence>
-                    {isHovering && !isProfileOpen && (
-                      <motion.span
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -10 }}
-                        transition={{ duration: 0.2 }}
-                        className="text-sm font-medium text-gray-700 dark:text-gray-300"
-                      >
-                        {user.displayName || user.email?.split('@')[0] || 'User'}
-                      </motion.span>
-                    )}
-                  </AnimatePresence>
-
-                  <ChevronDown className={`w-4 h-4 text-gray-600 dark:text-gray-300 transition-colors ${isProfileOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`w-4 h-4 text-gray-600 dark:text-gray-300 transition-transform duration-200 ${isProfileOpen ? 'rotate-180' : ''}`} />
                 </div>
 
                 {/* Full Profile Dropdown on Click */}
@@ -193,7 +202,7 @@ export function NavBar() {
                     >
                       <div className="py-1">
                         <motion.div
-                          whileHover={{ backgroundColor: 'rgba(99, 102, 241, 0.05)' }}
+                          whileHover={{ backgroundColor: theme === 'dark' ? 'rgba(99, 102, 241, 0.1)' : 'rgba(99, 102, 241, 0.05)' }}
                           className="px-4 py-2 border-b border-gray-100 dark:border-gray-700 cursor-pointer"
                           onClick={() => {
                             router.push('/profile');
@@ -208,7 +217,7 @@ export function NavBar() {
                           </p>
                         </motion.div>
                         <motion.button
-                          whileHover={{ x: 4, backgroundColor: 'rgba(99, 102, 241, 0.05)' }}
+                          whileHover={{ x: 4, backgroundColor: theme === 'dark' ? 'rgba(99, 102, 241, 0.1)' : 'rgba(99, 102, 241, 0.05)' }}
                           onClick={() => {
                             router.push('/profile');
                             setIsProfileOpen(false);
@@ -219,7 +228,7 @@ export function NavBar() {
                           <span>View Profile</span>
                         </motion.button>
                         <motion.button
-                          whileHover={{ x: 4, backgroundColor: 'rgba(99, 102, 241, 0.05)' }}
+                          whileHover={{ x: 4, backgroundColor: theme === 'dark' ? 'rgba(99, 102, 241, 0.1)' : 'rgba(99, 102, 241, 0.05)' }}
                           onClick={() => {
                             router.push('/profile/edit');
                             setIsProfileOpen(false);
@@ -230,7 +239,7 @@ export function NavBar() {
                           <span>Edit Profile</span>
                         </motion.button>
                         <motion.button
-                          whileHover={{ x: 4, backgroundColor: 'rgba(99, 102, 241, 0.05)' }}
+                          whileHover={{ x: 4, backgroundColor: theme === 'dark' ? 'rgba(99, 102, 241, 0.1)' : 'rgba(99, 102, 241, 0.05)' }}
                           onClick={() => {
                             router.push('/settings');
                             setIsProfileOpen(false);
@@ -242,7 +251,7 @@ export function NavBar() {
                         </motion.button>
                         <div className="border-t border-gray-100 dark:border-gray-700 my-1" />
                         <motion.button
-                          whileHover={{ x: 4, backgroundColor: 'rgba(239, 68, 68, 0.05)' }}
+                          whileHover={{ x: 4, backgroundColor: theme === 'dark' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(239, 68, 68, 0.05)' }}
                           onClick={handleSignOut}
                           className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 flex items-center space-x-2"
                         >
@@ -258,13 +267,26 @@ export function NavBar() {
               <div className="flex items-center space-x-4">
                 <Link
                   href="/login"
-                  className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                  className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors group flex items-center"
+                  passHref
                 >
-                  Sign In
+                  <motion.span
+                    whileHover={{ x: 3 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                  >
+                    Sign In
+                  </motion.span>
+                  <motion.div
+                    initial={{ opacity: 0, x: -5 }}
+                    whileHover={{ opacity: 1, x: 0 }}
+                    className="ml-1 text-indigo-600 dark:text-indigo-400 opacity-0 group-hover:opacity-100 transition-all duration-200"
+                  >
+                    <ArrowRight className="w-4 h-4" />
+                  </motion.div>
                 </Link>
                 <Link
                   href="/signup"
-                  className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-lg font-medium transition-all duration-300 hover:shadow-lg"
+                  className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-purple-600 hover:to-indigo-600 text-white rounded-lg font-medium transition-all duration-300 shadow-lg hover:shadow-xl"
                 >
                   Get Started
                 </Link>
@@ -276,21 +298,39 @@ export function NavBar() {
           <div className="flex md:hidden items-center space-x-2">
             {/* Theme Switch Button for Mobile */}
             <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              transition={{ type: "spring", stiffness: 400, damping: 17 }}
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
               className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
               aria-label="Toggle theme"
             >
               {theme === 'dark' ? (
-                <Sun className="w-5 h-5" />
+                <motion.div
+                  key="sun-mobile"
+                  initial={{ rotate: 0, opacity: 0.5 }}
+                  animate={{ rotate: 360, opacity: 1 }}
+                  exit={{ rotate: 0, opacity: 0.5 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  <Sun className="w-5 h-5" />
+                </motion.div>
               ) : (
-                <Moon className="w-5 h-5" />
+                <motion.div
+                  key="moon-mobile"
+                  initial={{ rotate: 0, opacity: 0.5 }}
+                  animate={{ rotate: 360, opacity: 1 }}
+                  exit={{ rotate: 0, opacity: 0.5 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  <Moon className="w-5 h-5" />
+                </motion.div>
               )}
             </motion.button>
-            
+
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
+              aria-label="Toggle mobile menu"
               className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
             >
               {isMenuOpen ? (
@@ -307,21 +347,24 @@ export function NavBar() {
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.2 }}
             className="md:hidden border-t border-gray-200 dark:border-gray-800"
           >
             <div className="px-4 py-3 space-y-3">
               <Link
                 href="/decks"
-                className="block text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                className="block text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors py-1"
+                onClick={() => setIsMenuOpen(false)}
               >
                 My Decks
               </Link>
               <Link
                 href="/review"
-                className="block text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                className="block text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors py-1"
+                onClick={() => setIsMenuOpen(false)}
               >
                 Review
               </Link>
@@ -340,7 +383,7 @@ export function NavBar() {
                           />
                         </div>
                       ) : (
-                        <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                        <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center text-indigo-600 dark:text-indigo-400 ring-2 ring-gray-200 dark:ring-gray-700">
                           {getInitials(user.displayName)}
                         </div>
                       )}
@@ -356,25 +399,31 @@ export function NavBar() {
                   </div>
                   <Link
                     href="/profile"
-                    className="block text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                    className="block text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors py-1"
+                    onClick={() => setIsMenuOpen(false)}
                   >
                     View Profile
                   </Link>
                   <Link
                     href="/profile/edit"
-                    className="block text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                    className="block text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors py-1"
+                    onClick={() => setIsMenuOpen(false)}
                   >
                     Edit Profile
                   </Link>
                   <Link
                     href="/settings"
-                    className="block text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                    className="block text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors py-1"
+                    onClick={() => setIsMenuOpen(false)}
                   >
                     Settings
                   </Link>
                   <button
-                    onClick={handleSignOut}
-                    className="block w-full text-left text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors"
+                    onClick={() => {
+                      handleSignOut();
+                      setIsMenuOpen(false);
+                    }}
+                    className="block w-full text-left text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors py-1"
                   >
                     Sign Out
                   </button>
@@ -383,13 +432,15 @@ export function NavBar() {
                 <div className="space-y-3 pt-3 border-t border-gray-200 dark:border-gray-800">
                   <Link
                     href="/login"
-                    className="block text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                    className="block text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors py-1"
+                    onClick={() => setIsMenuOpen(false)}
                   >
                     Sign In
                   </Link>
                   <Link
                     href="/signup"
-                    className="block px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-lg font-medium text-center transition-all duration-300 hover:shadow-lg"
+                    className="block px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-purple-600 hover:to-indigo-600 text-white rounded-lg font-medium text-center transition-all duration-300 shadow-lg hover:shadow-xl"
+                    onClick={() => setIsMenuOpen(false)}
                   >
                     Get Started
                   </Link>

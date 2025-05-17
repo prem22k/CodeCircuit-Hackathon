@@ -1,12 +1,12 @@
 'use client';
 
-import { useState } from 'react';
-import { X } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { X, Plus, Sparkles } from 'lucide-react';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface CreateDeckDialogProps {
   open: boolean;
@@ -18,6 +18,18 @@ export function CreateDeckDialog({ open, onClose }: CreateDeckDialogProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
+  const [titleLength, setTitleLength] = useState(0);
+  const [descriptionLength, setDescriptionLength] = useState(0);
+
+  // Reset form when dialog opens/closes
+  useEffect(() => {
+    if (!open) {
+      setTitle('');
+      setDescription('');
+      setTitleLength(0);
+      setDescriptionLength(0);
+    }
+  }, [open]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,8 +69,6 @@ export function CreateDeckDialog({ open, onClose }: CreateDeckDialogProps) {
       }
 
       toast.success('Deck created successfully!');
-      setTitle('');
-      setDescription('');
       onClose();
     } catch (error) {
       console.error('Error creating deck:', error);
@@ -71,84 +81,163 @@ export function CreateDeckDialog({ open, onClose }: CreateDeckDialogProps) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.95 }}
-        className="relative bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-md p-6"
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-50 flex items-center justify-center"
       >
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold bg-gradient-to-r from-black to-gray-600 dark:from-white dark:to-gray-400 bg-clip-text text-transparent">
-            Create New Deck
-          </h2>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-          >
-            <X className="w-6 h-6" />
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="title" className="block text-sm font-medium mb-1">
-              Title
-            </label>
-            <input
-              type="text"
-              id="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 transition-all duration-300"
-              placeholder="Enter deck title"
-              disabled={loading}
-              required
-              minLength={1}
-              maxLength={100}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="description" className="block text-sm font-medium mb-1">
-              Description
-            </label>
-            <textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 transition-all duration-300"
-              placeholder="Enter deck description"
-              rows={3}
-              disabled={loading}
-              maxLength={500}
-            />
-          </div>
-
-          <div className="flex justify-end gap-3 pt-4">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm"
+          onClick={onClose}
+        />
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: 20 }}
+          transition={{ type: "spring", stiffness: 400, damping: 25 }}
+          className="relative bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-md p-6"
+        >
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-2">
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.1, type: "spring", stiffness: 400, damping: 25 }}
+                className="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg"
+              >
+                <Sparkles className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+              </motion.div>
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 bg-clip-text text-transparent">
+                Create New Deck
+              </h2>
+            </div>
             <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              type="button"
+              whileHover={{ scale: 1.1, rotate: 90 }}
+              whileTap={{ scale: 0.9 }}
               onClick={onClose}
-              className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-colors"
-              disabled={loading}
+              className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 transition-colors"
             >
-              Cancel
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              type="submit"
-              className="px-6 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={loading}
-            >
-              {loading ? 'Creating...' : 'Create Deck'}
+              <X className="w-6 h-6" />
             </motion.button>
           </div>
-        </form>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <div className="flex justify-between items-center mb-1">
+                <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Title
+                </label>
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  {titleLength}/100
+                </span>
+              </div>
+              <motion.div
+                whileFocus={{ scale: 1.01 }}
+                className="relative"
+              >
+                <input
+                  type="text"
+                  id="title"
+                  value={title}
+                  onChange={(e) => {
+                    setTitle(e.target.value);
+                    setTitleLength(e.target.value.length);
+                  }}
+                  className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 transition-all duration-300"
+                  placeholder="Enter deck title"
+                  disabled={loading}
+                  required
+                  minLength={1}
+                  maxLength={100}
+                />
+                <motion.div
+                  className="absolute bottom-0 left-0 h-0.5 bg-gradient-to-r from-indigo-600 to-purple-600"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${(titleLength / 100) * 100}%` }}
+                  transition={{ duration: 0.3 }}
+                />
+              </motion.div>
+            </div>
+
+            <div>
+              <div className="flex justify-between items-center mb-1">
+                <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Description
+                </label>
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  {descriptionLength}/500
+                </span>
+              </div>
+              <motion.div
+                whileFocus={{ scale: 1.01 }}
+                className="relative"
+              >
+                <textarea
+                  id="description"
+                  value={description}
+                  onChange={(e) => {
+                    setDescription(e.target.value);
+                    setDescriptionLength(e.target.value.length);
+                  }}
+                  className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 transition-all duration-300 resize-none"
+                  placeholder="Enter deck description (optional)"
+                  rows={3}
+                  disabled={loading}
+                  maxLength={500}
+                />
+                <motion.div
+                  className="absolute bottom-0 left-0 h-0.5 bg-gradient-to-r from-indigo-600 to-purple-600"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${(descriptionLength / 500) * 100}%` }}
+                  transition={{ duration: 0.3 }}
+                />
+              </motion.div>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-colors"
+                disabled={loading}
+              >
+                Cancel
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                type="submit"
+                className="px-6 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    >
+                      <Plus className="w-5 h-5" />
+                    </motion.div>
+                    Creating...
+                  </>
+                ) : (
+                  <>
+                    <Plus className="w-5 h-5" />
+                    Create Deck
+                  </>
+                )}
+              </motion.button>
+            </div>
+          </form>
+        </motion.div>
       </motion.div>
-    </div>
+    </AnimatePresence>
   );
 } 
