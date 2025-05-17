@@ -84,7 +84,7 @@ export default function HomePage() {
             {user ? (
               <button
                 onClick={() => router.push('/decks')}
-                className="btn btn-primary btn-lg group"
+                className="btn btn-primary btn-lg group bg-primary-500 hover:bg-primary-600 text-white px-8 py-4 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
               >
                 My Decks
                 <ChevronRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
@@ -92,7 +92,7 @@ export default function HomePage() {
             ) : (
               <button
                 onClick={() => router.push('/login')}
-                className="btn btn-primary btn-lg group"
+                className="btn btn-primary btn-lg group bg-primary-500 hover:bg-primary-600 text-white px-8 py-4 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
               >
                 Get Started
                 <ChevronRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
@@ -237,7 +237,7 @@ export default function HomePage() {
           </p>
           <motion.button
             onClick={() => router.push(user ? '/decks' : '/login')}
-            className="btn btn-primary btn-lg group"
+            className="btn btn-primary btn-lg group bg-primary-500 hover:bg-primary-600 text-white px-8 py-4 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
