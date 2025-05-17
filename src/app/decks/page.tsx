@@ -8,6 +8,7 @@ import { Deck } from '@/types';
 import { Dialog } from '@headlessui/react';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { showToast } from '@/components/common/Toast';
+import Tutorial from '@/components/Tutorial';
 
 export default function DecksPage() {
   const [decks, setDecks] = useState<Deck[]>([]);
@@ -16,9 +17,15 @@ export default function DecksPage() {
   const [editingDeck, setEditingDeck] = useState<Deck | null>(null);
   const [formData, setFormData] = useState({ title: '', description: '' });
   const [isSaving, setIsSaving] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
 
   useEffect(() => {
     loadDecks();
+    // Show tutorial for new users (no decks)
+    const hasSeenTutorial = localStorage.getItem('hasSeenTutorial');
+    if (!hasSeenTutorial) {
+      setShowTutorial(true);
+    }
   }, []);
 
   const loadDecks = async () => {
@@ -90,6 +97,11 @@ export default function DecksPage() {
     setFormData({ title: '', description: '' });
   };
 
+  const handleTutorialComplete = () => {
+    setShowTutorial(false);
+    localStorage.setItem('hasSeenTutorial', 'true');
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-[400px] flex items-center justify-center">
@@ -100,6 +112,8 @@ export default function DecksPage() {
 
   return (
     <div className="space-y-6">
+      {showTutorial && <Tutorial onComplete={handleTutorialComplete} />}
+      
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Your Decks</h1>
         <button onClick={openCreateModal} className="btn btn-primary flex items-center gap-2">
