@@ -20,6 +20,11 @@ const signupSchema = z.object({
 
 type SignupFormData = z.infer<typeof signupSchema>;
 
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0 }
+};
+
 const Signup = () => {
   const router = useRouter();
   const { user, loading, signUpWithEmail } = useAuth();
