@@ -74,7 +74,7 @@ export default function DashboardPage() {
 
         for (const deck of decksData) {
           const { reviews } = await useSRS(deck.id);
-          const deckCards = deck.cards || [];
+          const deckCards = Array.isArray(deck.cards) ? deck.cards : [];
           totalCards += deckCards.length;
           
           // Count mastered cards (box 4 or higher)
