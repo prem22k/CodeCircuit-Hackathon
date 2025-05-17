@@ -108,11 +108,9 @@ export default function DecksPage() {
     }
 
     try {
-      await updateDeck(selectedDeck.id, {
-        ...selectedDeck,
+      await updateDeck(user!.id, selectedDeck.id, {
         title: newDeckTitle,
         description: newDeckDescription,
-        updatedAt: new Date(),
       });
 
       setDecks(decks.map(deck => 
