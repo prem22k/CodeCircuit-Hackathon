@@ -165,8 +165,8 @@ export const createCard = async (userId: string, deckId: string, card: Omit<Card
     reviewCount: 0,
     successCount: 0,
     difficulty: 0,
-    lastReviewed: null,
-    nextReview: null,
+    lastReviewed: undefined,
+    nextReview: undefined,
   }
 
   const docRef = await addDoc(cardsRef, newCardData);
@@ -181,8 +181,8 @@ export const createCard = async (userId: string, deckId: string, card: Omit<Card
     reviewCount: 0,
     successCount: 0,
     difficulty: 0,
-    lastReviewed: null,
-    nextReview: null,
+    lastReviewed: undefined,
+    nextReview: undefined,
   };
 };
 
