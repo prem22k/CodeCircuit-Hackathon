@@ -1,3 +1,5 @@
+'use client';
+
 import { Inter } from 'next/font/google';
 import { Metadata } from 'next';
 import { usePathname } from 'next/navigation';
