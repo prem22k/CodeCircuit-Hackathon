@@ -25,7 +25,7 @@ export interface DailyStats {
   averagePerformance: number;
 }
 
-export function useReviewHistory(deckId: string, limit: number = 50) {
+export function useReviewHistory(deckId: string, limitCount: number = 50) {
   const { user } = useAuth();
   const [records, setRecords] = useState<ReviewRecord[]>([]);
   const [dailyStats, setDailyStats] = useState<DailyStats[]>([]);
@@ -49,7 +49,7 @@ export function useReviewHistory(deckId: string, limit: number = 50) {
         const q = query(
           historyRef,
           orderBy('timestamp', 'desc'),
-          limit(limit)
+          limit(limitCount)
         );
 
         const snapshot = await getDocs(q);
@@ -77,7 +77,7 @@ export function useReviewHistory(deckId: string, limit: number = 50) {
     };
 
     loadHistory();
-  }, [user, deckId, limit]);
+  }, [user, deckId, limitCount]);
 
   return { records, dailyStats, streak, loading, error };
 }
