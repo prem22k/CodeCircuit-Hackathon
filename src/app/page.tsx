@@ -36,7 +36,7 @@ export default function HomePage() {
   return (
     <div className="space-y-24">
       {/* Hero Section */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-blue-50 to-purple-100 dark:from-blue-900/20 dark:to-purple-800/20">
+      <div className="relative overflow-hidden bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <motion.div 
@@ -49,7 +49,7 @@ export default function HomePage() {
                  initial={{ opacity: 0, y: 10 }}
                  animate={{ opacity: 1, y: 0 }}
                  transition={{ duration: 0.5, delay: 0.2 }}
-                 className="inline-flex items-center px-4 py-2 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-sm font-medium"
+                 className="inline-flex items-center px-4 py-2 rounded-full bg-gray-200 dark:bg-gray-700 text-blue-600 dark:text-blue-300 text-sm font-medium"
               >
                 <Brain className="w-5 h-5 mr-2" />
                 <span>Smart Learning Platform</span>
@@ -65,7 +65,7 @@ export default function HomePage() {
                 <span className="relative">
                   BrainBoost
                   <motion.span
-                    className="absolute -bottom-2 left-0 w-full h-1 bg-blue-500 dark:bg-purple-500"
+                    className="absolute -bottom-2 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-purple-500"
                     initial={{ scaleX: 0 }}
                     animate={{ scaleX: 1 }}
                     transition={{ duration: 0.5, delay: 1.0 }}
@@ -107,7 +107,7 @@ export default function HomePage() {
                 )}
                 <Link
                   href="/dashboard"
-                  className="px-8 py-3 border border-blue-500 dark:border-purple-500 text-blue-600 dark:text-purple-400 rounded-lg font-semibold hover:bg-blue-50 dark:hover:bg-purple-900/20 transition-colors flex items-center justify-center group"
+                  className="px-8 py-3 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg font-semibold hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center justify-center group"
                 >
                   View Dashboard
                   <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
@@ -137,7 +137,7 @@ export default function HomePage() {
 
       {/* Features Section */}
       <motion.div 
-        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16"
+        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 bg-white dark:bg-gray-900 rounded-xl shadow-sm"
         variants={staggerContainer}
         initial="initial"
         whileInView="animate"
@@ -154,13 +154,13 @@ export default function HomePage() {
 
         <div className="grid md:grid-cols-3 gap-8">
           <motion.div 
-            className="card hover:shadow-xl transition-all duration-300 text-center p-8 relative overflow-hidden group"
+            className="card hover:shadow-xl transition-all duration-300 text-center p-8 relative overflow-hidden group border border-gray-200 dark:border-gray-700 rounded-xl"
             variants={fadeInUp}
           >
             <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-purple-100 dark:from-blue-900/20 dark:to-purple-800/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             <div className="relative">
               <div className="flex justify-center mb-6">
-                <div className="p-4 bg-blue-100 dark:bg-blue-900 rounded-xl">
+                <div className="p-4 bg-gray-100 dark:bg-gray-700 rounded-xl">
                   <BookOpen className="w-12 h-12 text-blue-600 dark:text-purple-400" />
                 </div>
               </div>
@@ -172,13 +172,13 @@ export default function HomePage() {
           </motion.div>
 
           <motion.div 
-            className="card hover:shadow-xl transition-all duration-300 text-center p-8 relative overflow-hidden group"
+            className="card hover:shadow-xl transition-all duration-300 text-center p-8 relative overflow-hidden group border border-gray-200 dark:border-gray-700 rounded-xl"
             variants={fadeInUp}
           >
             <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-purple-100 dark:from-blue-900/20 dark:to-purple-800/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             <div className="relative">
               <div className="flex justify-center mb-6">
-                <div className="p-4 bg-blue-100 dark:bg-blue-900 rounded-xl">
+                <div className="p-4 bg-gray-100 dark:bg-gray-700 rounded-xl">
                   <Zap className="w-12 h-12 text-blue-600 dark:text-purple-400" />
                 </div>
               </div>
@@ -190,13 +190,13 @@ export default function HomePage() {
           </motion.div>
 
           <motion.div 
-            className="card hover:shadow-xl transition-all duration-300 text-center p-8 relative overflow-hidden group"
+            className="card hover:shadow-xl transition-all duration-300 text-center p-8 relative overflow-hidden group border border-gray-200 dark:border-gray-700 rounded-xl"
             variants={fadeInUp}
           >
             <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-purple-100 dark:from-blue-900/20 dark:to-purple-800/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             <div className="relative">
               <div className="flex justify-center mb-6">
-                <div className="p-4 bg-blue-100 dark:bg-blue-900 rounded-xl">
+                <div className="p-4 bg-gray-100 dark:bg-gray-700 rounded-xl">
                   <Sparkles className="w-12 h-12 text-blue-600 dark:text-purple-400" />
                 </div>
               </div>
@@ -261,8 +261,8 @@ export default function HomePage() {
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                 >
-                  <div className="relative z-10 bg-white dark:bg-gray-800 rounded-xl p-6 text-center shadow-lg">
-                    <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <div className="relative z-10 bg-white dark:bg-gray-800 rounded-xl p-6 text-center shadow-lg border border-gray-200 dark:border-gray-700">
+                    <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-6">
                       <item.icon className="w-8 h-8 text-blue-600 dark:text-purple-400" />
                     </div>
                     <h3 className="font-semibold mb-2 text-gray-900 dark:text-white">{item.title}</h3>
@@ -279,7 +279,7 @@ export default function HomePage() {
 
       {/* CTA Section */}
       <motion.div 
-        className="relative overflow-hidden bg-gradient-to-br from-blue-50 to-purple-100 dark:from-blue-900/20 dark:to-purple-800/20"
+        className="relative overflow-hidden bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800"
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         viewport={{ once: true }}
