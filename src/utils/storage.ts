@@ -61,34 +61,37 @@ export const getDeck = async (userId: string, deckId: string): Promise<Deck | nu
 export const createDeck = async (userId: string, deck: Omit<Deck, 'id' | 'userId' | 'createdAt' | 'updatedAt' | 'lastStudied' | 'reviewCount' | 'averagePerformance' | 'totalReviews' | 'cardsMastered' | 'cardsLearning' | 'cardsNotStarted' | 'cards'>): Promise<Deck> => {
   if (!userId) throw new Error('User ID is required to create a deck.');
   const decksRef = collection(db, `users/${userId}/decks`);
-  const newDeckData = {
+  
+  // Create a clean object without undefined values for Firestore
+  const newDeckData: Record<string, any> = {
     ...deck,
     userId: userId,
     cards: [], // Cards are in subcollection
-    createdAt: serverTimestamp(), // Use serverTimestamp for consistency
-    updatedAt: serverTimestamp(), // Use serverTimestamp for consistency
-    lastStudied: undefined,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
     reviewCount: 0,
     averagePerformance: 0,
     totalReviews: 0,
     cardsMastered: 0,
     cardsLearning: 0,
     cardsNotStarted: 0,
-  }
+  };
+
+  // Remove any undefined values before sending to Firestore
+  Object.keys(newDeckData).forEach(key => 
+    newDeckData[key] === undefined && delete newDeckData[key]
+  );
 
   const docRef = await addDoc(decksRef, newDeckData);
 
-  // Return data with client-side Date objects if serverTimestamp() was used
-  // Note: Data returned by addDoc doesn't include serverTimestamp values immediately.
-  // To get the actual server timestamps, you'd typically fetch the document after creation.
-  // For simplicity here, we'll return the provided data with client dates, but be aware.
+  // Return data with client-side Date objects
   return {
     id: docRef.id,
     ...deck,
     userId: userId,
     cards: [],
-    createdAt: new Date(), 
-    updatedAt: new Date(), 
+    createdAt: new Date(),
+    updatedAt: new Date(),
     lastStudied: undefined,
     reviewCount: 0,
     averagePerformance: 0,
