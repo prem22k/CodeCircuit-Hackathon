@@ -1,6 +1,6 @@
 import { Inter } from 'next/font/google';
 import { Metadata } from 'next';
-import { NavBar } from '@/components/NavBar';
+import { NavBar } from '@/components/layout/NavBar';
 import { Footer } from '@/components/Footer';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import './globals.css';
