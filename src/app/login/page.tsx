@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { auth } from '@/lib/firebase';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import { Brain, Mail, Lock, User, ArrowRight } from 'lucide-react';
+import { Brain, Mail, Lock, User, ArrowRight, ArrowLeft } from 'lucide-react';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 
 // Mark this page as dynamic
@@ -68,6 +68,14 @@ export default function AuthPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 to-primary-100 dark:from-primary-900/20 dark:to-primary-900/10 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
+        <button
+          onClick={() => router.push('/')}
+          className="flex items-center text-gray-600 dark:text-gray-400 hover:text-primary-500 dark:hover:text-primary-400 transition-colors"
+        >
+          <ArrowLeft className="w-5 h-5 mr-2" />
+          Back to Home
+        </button>
+
         <div className="text-center">
           <div className="flex justify-center">
             <Brain className="w-12 h-12 text-primary-500" />
