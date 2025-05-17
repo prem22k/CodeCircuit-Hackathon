@@ -1,4 +1,4 @@
-import { Card } from '../types';
+import { Card } from '../types/firebase';
 
 export interface CardReview {
   id: string;
