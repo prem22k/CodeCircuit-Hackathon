@@ -36,10 +36,10 @@ export default function HomePage() {
   }
 
   return (
-    <div className="space-y-24">
+    <div className="space-y-16">
       {/* Hero Section */}
       <div className="relative overflow-hidden bg-white dark:bg-gray-900">
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <motion.div 
               className="space-y-6 text-center lg:text-left"
@@ -139,7 +139,7 @@ export default function HomePage() {
 
       {/* Features Section */}
       <motion.div 
-        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16"
+        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12"
         variants={staggerContainer}
         initial="initial"
         whileInView="animate"
@@ -212,7 +212,7 @@ export default function HomePage() {
       </motion.div>
 
       {/* How It Works Section */}
-      <div className="py-16 px-4 bg-gray-50 dark:bg-gray-900">
+      <div className="py-12 px-4 bg-gray-50 dark:bg-gray-900">
         <div className="max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -287,7 +287,7 @@ export default function HomePage() {
         viewport={{ once: true }}
         transition={{ duration: 0.5 }}
       >
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
           <h2 className="text-3xl font-bold mb-4 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
             Ready to Boost Your Learning?
           </h2>

@@ -200,24 +200,30 @@ export default function DecksPage() {
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex justify-between items-center mb-8 bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700"
+          className="flex justify-between items-center mb-8 bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700"
         >
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-4">
             <motion.div
-              whileHover={{ scale: 1.05 }}
+              whileHover={{ scale: 1.05, rotate: 5 }}
               whileTap={{ scale: 0.95 }}
+              className="p-3 bg-gradient-to-br from-indigo-500 to-purple-600 dark:from-indigo-600 dark:to-purple-700 rounded-xl"
             >
-              <Brain className="w-8 h-8 text-black dark:text-white" />
+              <BookOpen className="w-8 h-8 text-white" />
             </motion.div>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-black to-gray-600 dark:from-white dark:to-gray-400 bg-clip-text text-transparent">
-              My Decks
-            </h1>
+            <div>
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 bg-clip-text text-transparent">
+                My Decks
+              </h1>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                {filteredAndSortedDecks.length} {filteredAndSortedDecks.length === 1 ? 'deck' : 'decks'} total
+              </p>
+            </div>
           </div>
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setIsCreateModalOpen(true)}
-            className="px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors flex items-center space-x-2"
+            className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 flex items-center space-x-2"
           >
             <Plus className="w-5 h-5" />
             <span>Create Deck</span>
@@ -228,24 +234,24 @@ export default function DecksPage() {
         <div className="mb-8 flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search decks..."
-              className="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
+              className="w-full pl-10 pr-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 transition-all duration-300"
             />
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-3">
             <div className="relative">
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setIsSortOpen(!isSortOpen)}
-                className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg flex items-center space-x-2"
+                className="px-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl flex items-center space-x-2 hover:border-indigo-500 dark:hover:border-indigo-400 transition-all duration-300"
               >
-                <SortAsc className="w-5 h-5" />
-                <span>Sort</span>
+                <SortAsc className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+                <span className="text-gray-700 dark:text-gray-300">Sort</span>
               </motion.button>
               <AnimatePresence>
                 {isSortOpen && (
@@ -253,7 +259,7 @@ export default function DecksPage() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
-                    className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-10"
+                    className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-10"
                   >
                     {['newest', 'oldest', 'name', 'cards'].map((option) => (
                       <button
@@ -264,7 +270,7 @@ export default function DecksPage() {
                         }}
                         className={`w-full px-4 py-2 text-left text-sm ${
                           sortBy === option
-                            ? 'bg-gray-100 dark:bg-gray-700 text-black dark:text-white'
+                            ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400'
                             : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                         }`}
                       >
@@ -280,10 +286,10 @@ export default function DecksPage() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setIsFilterOpen(!isFilterOpen)}
-                className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg flex items-center space-x-2"
+                className="px-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl flex items-center space-x-2 hover:border-indigo-500 dark:hover:border-indigo-400 transition-all duration-300"
               >
-                <Filter className="w-5 h-5" />
-                <span>Filter</span>
+                <Filter className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+                <span className="text-gray-700 dark:text-gray-300">Filter</span>
               </motion.button>
               <AnimatePresence>
                 {isFilterOpen && (
@@ -291,7 +297,7 @@ export default function DecksPage() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
-                    className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-10"
+                    className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-10"
                   >
                     {['all', 'recent', 'empty'].map((option) => (
                       <button
@@ -302,7 +308,7 @@ export default function DecksPage() {
                         }}
                         className={`w-full px-4 py-2 text-left text-sm ${
                           filterBy === option
-                            ? 'bg-gray-100 dark:bg-gray-700 text-black dark:text-white'
+                            ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400'
                             : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                         }`}
                       >
@@ -320,29 +326,29 @@ export default function DecksPage() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="text-center py-12 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700"
+            className="text-center py-16 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700"
           >
-            <div className="w-24 h-24 mx-auto mb-4 relative">
+            <div className="w-32 h-32 mx-auto mb-6 relative">
               <Image
-                src="/studying.svg"
+                src={theme === 'dark' ? '/dark.png' : '/light.png'}
                 alt="No decks"
                 fill
                 className="object-contain opacity-50"
               />
-          </div>
-            <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">
+            </div>
+            <h3 className="text-2xl font-semibold mb-3 text-gray-900 dark:text-white">
               {searchQuery ? 'No matching decks found' : 'No decks yet'}
             </h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">
+            <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
               {searchQuery ? 'Try adjusting your search or filters' : 'Create your first deck to start learning'}
             </p>
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setIsCreateModalOpen(true)}
-              className="px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors flex items-center space-x-2 mx-auto"
+              className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 flex items-center space-x-2 mx-auto"
             >
-              <Plus className="w-4 h-4" />
+              <Plus className="w-5 h-5" />
               <span>Create Your First Deck</span>
             </motion.button>
           </motion.div>
@@ -351,16 +357,16 @@ export default function DecksPage() {
             <AnimatePresence>
               {filteredAndSortedDecks.map((deck, index) => (
                 <motion.div
-                key={deck.id}
+                  key={deck.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ delay: index * 0.1 }}
-                  className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-all group"
+                  className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-lg transition-all duration-300 group"
                 >
                   <div className="p-6">
                     <div className="flex justify-between items-start mb-4">
-                      <h3 className="text-xl font-semibold text-gray-900 dark:text-white group-hover:text-black dark:group-hover:text-white transition-colors">
+                      <h3 className="text-xl font-semibold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                         {deck.title}
                       </h3>
                       <div className="flex gap-2">
@@ -373,7 +379,7 @@ export default function DecksPage() {
                             setNewDeckDescription(deck.description);
                             setIsEditModalOpen(true);
                           }}
-                          className="p-2 text-gray-400 hover:text-black dark:hover:text-white transition-colors"
+                          className="p-2 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
                         >
                           <Pencil className="w-4 h-4" />
                         </motion.button>
@@ -387,33 +393,33 @@ export default function DecksPage() {
                         </motion.button>
                       </div>
                     </div>
-                    <p className="text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">
-                  {deck.description}
-                </p>
+                    <p className="text-gray-600 dark:text-gray-400 mb-6 line-clamp-2">
+                      {deck.description}
+                    </p>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-4">
                         <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                          <BookOpen className="w-4 h-4 mr-1" />
+                          <BookOpen className="w-4 h-4 mr-1.5" />
                           {deck.cardCount} cards
                         </div>
                         <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                          <Clock className="w-4 h-4 mr-1" />
+                          <Clock className="w-4 h-4 mr-1.5" />
                           {new Date(deck.updatedAt).toLocaleDateString()}
                         </div>
-                </div>
+                      </div>
                       <motion.div
                         whileHover={{ x: 4 }}
-                        className="flex items-center text-sm text-gray-500 dark:text-gray-400 group-hover:text-black dark:group-hover:text-white transition-colors"
+                        className="flex items-center text-sm text-indigo-600 dark:text-indigo-400 group-hover:text-indigo-700 dark:group-hover:text-indigo-300 transition-colors"
                       >
                         <Link href={`/decks/${deck.id}`} className="flex items-center">
                           Study
                           <ChevronRight className="w-4 h-4 ml-1" />
-              </Link>
+                        </Link>
                       </motion.div>
                     </div>
                   </div>
                 </motion.div>
-            ))}
+              ))}
             </AnimatePresence>
           </div>
         )}
@@ -426,7 +432,7 @@ export default function DecksPage() {
         >
           <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" aria-hidden="true" />
           <div className="fixed inset-0 flex items-center justify-center p-4">
-            <Dialog.Panel className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 max-w-md w-full p-6">
+            <Dialog.Panel className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 max-w-md w-full p-6">
               <div className="flex justify-between items-center mb-6">
                 <Dialog.Title className="text-xl font-semibold text-gray-900 dark:text-white">
                   Create New Deck
@@ -447,7 +453,7 @@ export default function DecksPage() {
                     type="text"
                     value={newDeckTitle}
                     onChange={(e) => setNewDeckTitle(e.target.value)}
-                    className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
+                    className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 transition-all duration-300"
                     placeholder="Enter deck title"
                   />
                 </div>
@@ -458,17 +464,17 @@ export default function DecksPage() {
                   <textarea
                     value={newDeckDescription}
                     onChange={(e) => setNewDeckDescription(e.target.value)}
-                    className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
+                    className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 transition-all duration-300"
                     placeholder="Enter deck description"
                     rows={3}
                   />
                 </div>
-                <div className="flex justify-end gap-2 pt-4">
+                <div className="flex justify-end gap-3 pt-4">
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => setIsCreateModalOpen(false)}
-                    className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                    className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-colors"
                   >
                     Cancel
                   </motion.button>
@@ -476,7 +482,7 @@ export default function DecksPage() {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={handleCreateDeck}
-                    className="px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors"
+                    className="px-6 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
                   >
                     Create Deck
                   </motion.button>
@@ -494,7 +500,7 @@ export default function DecksPage() {
         >
           <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" aria-hidden="true" />
           <div className="fixed inset-0 flex items-center justify-center p-4">
-            <Dialog.Panel className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 max-w-md w-full p-6">
+            <Dialog.Panel className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 max-w-md w-full p-6">
               <div className="flex justify-between items-center mb-6">
                 <Dialog.Title className="text-xl font-semibold text-gray-900 dark:text-white">
                   Edit Deck
@@ -515,7 +521,7 @@ export default function DecksPage() {
                     type="text"
                     value={newDeckTitle}
                     onChange={(e) => setNewDeckTitle(e.target.value)}
-                    className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
+                    className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 transition-all duration-300"
                     placeholder="Enter deck title"
                   />
                 </div>
@@ -526,17 +532,17 @@ export default function DecksPage() {
                   <textarea
                     value={newDeckDescription}
                     onChange={(e) => setNewDeckDescription(e.target.value)}
-                    className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
+                    className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 transition-all duration-300"
                     placeholder="Enter deck description"
                     rows={3}
                   />
                 </div>
-                <div className="flex justify-end gap-2 pt-4">
+                <div className="flex justify-end gap-3 pt-4">
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => setIsEditModalOpen(false)}
-                    className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                    className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-colors"
                   >
                     Cancel
                   </motion.button>
@@ -544,7 +550,7 @@ export default function DecksPage() {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={handleEditDeck}
-                    className="px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors"
+                    className="px-6 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
                   >
                     Save Changes
                   </motion.button>
