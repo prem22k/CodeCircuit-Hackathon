@@ -85,8 +85,9 @@ export function NavBar() {
               <motion.div
                 whileHover={{ rotate: 10 }}
                 whileTap={{ scale: 0.9 }}
+                className="text-indigo-600 dark:text-indigo-400 transition-colors"
               >
-                <Brain className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
+                <Brain className="w-8 h-8" />
               </motion.div>
               <span className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
                 BrainBoost
@@ -154,7 +155,7 @@ export function NavBar() {
                     )}
                   </AnimatePresence>
 
-                  <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isProfileOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`w-4 h-4 text-gray-600 dark:text-gray-300 transition-colors ${isProfileOpen ? 'rotate-180' : ''}`} />
                 </div>
 
                 {/* Full Profile Dropdown on Click */}
