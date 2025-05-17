@@ -30,12 +30,20 @@ interface Card {
   nextReview: any;
 }
 
+interface Deck {
+  id: string;
+  title: string;
+  cards: Card[];
+  reviewCount?: number;
+  averagePerformance?: number;
+}
+
 export default function StudyPage() {
   const { id } = useParams();
   const router = useRouter();
   const { user } = useAuth();
   const { theme } = useTheme();
-  const [deck, setDeck] = useState<any>(null);
+  const [deck, setDeck] = useState<Deck | null>(null);
   const [loading, setLoading] = useState(true);
   const [cards, setCards] = useState<Card[]>([]);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
@@ -54,7 +62,7 @@ export default function StudyPage() {
     const deckRef = doc(db, `users/${user.id}/decks/${id}`);
     const unsubscribe = onSnapshot(deckRef, (doc) => {
       if (doc.exists()) {
-        const deckData = { id: doc.id, ...doc.data() };
+        const deckData = { id: doc.id, ...doc.data() } as Deck;
         setDeck(deckData);
         
         // Filter cards that are due for review

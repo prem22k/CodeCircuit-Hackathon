@@ -498,37 +498,240 @@ export default function DashboardPage() {
           <h2 className="text-xl font-bold bg-gradient-to-r from-black to-gray-600 dark:from-white dark:to-gray-400 bg-clip-text text-transparent mb-6">
             Performance Overview
           </h2>
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={performanceData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  paddingAngle={5}
-                  dataKey="value"
-                  animationDuration={1000}
-                >
-                  {performanceData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: 'white',
-                    border: '1px solid #e5e7eb',
-                    borderRadius: '0.5rem',
-                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-                  }}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Pie Chart */}
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={performanceData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    paddingAngle={5}
+                    dataKey="value"
+                    animationDuration={1000}
+                  >
+                    {performanceData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: 'white',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '0.5rem',
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                    }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Line Chart */}
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={dailyStats}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis 
+                    dataKey="date" 
+                    tickFormatter={(date) => new Date(date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                    stroke="#6b7280"
+                  />
+                  <YAxis stroke="#6b7280" />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: 'white',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '0.5rem',
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                    }}
+                    labelFormatter={(date) => new Date(date).toLocaleDateString()}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="reviews" 
+                    stroke="#3b82f6" 
+                    strokeWidth={2}
+                    dot={{ fill: '#3b82f6', strokeWidth: 2 }}
+                    activeDot={{ r: 6, fill: '#3b82f6' }}
+                    name="Reviews"
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="averagePerformance" 
+                    stroke="#10b981" 
+                    strokeWidth={2}
+                    dot={{ fill: '#10b981', strokeWidth: 2 }}
+                    activeDot={{ r: 6, fill: '#10b981' }}
+                    name="Success Rate"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Success Rate Analysis */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.7 }}
+          className="mt-8 bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm"
+        >
+          <h2 className="text-xl font-bold bg-gradient-to-r from-black to-gray-600 dark:from-white dark:to-gray-400 bg-clip-text text-transparent mb-6">
+            Success Rate Analysis
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Overall Success Rate */}
+            <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-gray-600 dark:text-gray-400">Overall Success Rate</span>
+                <Target className="w-5 h-5 text-green-500" />
+              </div>
+              <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                {stats.averagePerformance.toFixed(1)}%
+              </div>
+              <div className="mt-2 h-2 bg-gray-200 dark:bg-gray-600 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-green-500 rounded-full transition-all duration-500"
+                  style={{ width: `${stats.averagePerformance}%` }}
                 />
-              </PieChart>
-            </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* Weekly Trend */}
+            <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-gray-600 dark:text-gray-400">Weekly Trend</span>
+                <TrendingUp className="w-5 h-5 text-blue-500" />
+              </div>
+              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                {dailyStats.length > 0 ? (
+                  ((dailyStats[dailyStats.length - 1].averagePerformance - dailyStats[0].averagePerformance) / dailyStats[0].averagePerformance * 100).toFixed(1)
+                ) : 0}%
+              </div>
+              <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                vs last week
+              </div>
+            </div>
+
+            {/* Best Performing Deck */}
+            <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-gray-600 dark:text-gray-400">Best Performing Deck</span>
+                <Sparkles className="w-5 h-5 text-yellow-500" />
+              </div>
+              {decks && decks.length > 0 ? (
+                <>
+                  <div className="text-lg font-bold text-yellow-600 dark:text-yellow-400">
+                    {decks.reduce((best, deck) => 
+                      ((deck.averagePerformance || 0) > (best.averagePerformance || 0)) ? deck : best
+                    , decks[0]).title}
+                  </div>
+                  <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                    {decks.reduce((best, deck) => 
+                      ((deck.averagePerformance || 0) > (best.averagePerformance || 0)) ? deck : best
+                    , decks[0]).averagePerformance?.toFixed(1) || '0'}% success rate
+                  </div>
+                </>
+              ) : (
+                <div className="text-sm text-gray-500 dark:text-gray-400">No decks yet</div>
+              )}
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Calendar Heatmap */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.8 }}
+          className="mt-8 bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm"
+        >
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold bg-gradient-to-r from-black to-gray-600 dark:from-white dark:to-gray-400 bg-clip-text text-transparent">
+              Review Activity
+            </h2>
+            <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+              <span>Less</span>
+              <div className="flex gap-1">
+                {[0, 1, 2, 3].map((intensity) => (
+                  <div
+                    key={intensity}
+                    className={`w-3 h-3 rounded-sm ${getColor(intensity)}`}
+                  />
+                ))}
+              </div>
+              <span>More</span>
+            </div>
+          </div>
+          <CalendarHeatmap 
+            data={dailyStats.map(stat => ({
+              date: new Date(stat.date).toISOString(),
+              value: stat.reviews
+            }))}
+          />
+        </motion.div>
+
+        {/* Upcoming Reviews */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.9 }}
+          className="mt-8 bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm"
+        >
+          <h2 className="text-xl font-bold bg-gradient-to-r from-black to-gray-600 dark:from-white dark:to-gray-400 bg-clip-text text-transparent mb-6">
+            Upcoming Reviews
+          </h2>
+          <div className="space-y-4">
+            {decks.map(deck => {
+              const dueCards = deck.cards?.filter(card => {
+                if (!card.nextReview) return false;
+                const nextReview = new Date(card.nextReview.seconds * 1000);
+                const now = new Date();
+                const diffDays = Math.ceil((nextReview.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+                return diffDays <= 7 && diffDays >= 0;
+              }) || [];
+
+              if (dueCards.length === 0) return null;
+
+              return (
+                <motion.div
+                  key={deck.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg"
+                >
+                  <div className="flex items-center">
+                    <Bookmark className="w-5 h-5 text-gray-400 mr-3" />
+                    <span className="text-gray-700 dark:text-gray-300">{deck.title}</span>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-medium text-black dark:text-white">{dueCards.length} cards due</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Next review: {new Date(dueCards[0].nextReview.seconds * 1000).toLocaleDateString()}
+                    </p>
+                  </div>
+                </motion.div>
+              );
+            })}
           </div>
         </motion.div>
       </div>
     </div>
   );
+}
+
+// Helper function for heatmap colors
+function getColor(intensity: number) {
+  const colors = [
+    'bg-gray-100 dark:bg-gray-800',
+    'bg-blue-100 dark:bg-blue-900',
+    'bg-blue-200 dark:bg-blue-800',
+    'bg-blue-300 dark:bg-blue-700'
+  ];
+  return colors[intensity] || colors[0];
 } 
