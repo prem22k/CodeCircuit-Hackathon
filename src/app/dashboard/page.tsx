@@ -59,7 +59,7 @@ export default function DashboardPage() {
       try {
         setLoading(true);
         // Load user's decks
-        const decksRef = collection(db, 'users', user.uid, 'decks');
+        const decksRef = collection(db, 'users', user.id, 'decks');
         const decksSnapshot = await getDocs(decksRef);
         const decksData = decksSnapshot.docs.map(doc => ({
           id: doc.id,
