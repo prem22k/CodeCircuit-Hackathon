@@ -9,55 +9,51 @@ export interface Deck {
   id: string;
   title: string;
   description: string;
-  cardCount: number;
+  userId: string;
+  cards: Card[];
   createdAt: Date;
   updatedAt: Date;
-  userId: string;
-  tags?: string[];
-  isPublic?: boolean;
-  reviewCount?: number;
-  averagePerformance?: number;
-  totalReviews?: number;
-  cardsMastered?: number;
-  cardsLearning?: number;
-  cardsNotStarted?: number;
+  lastStudied?: Date;
+  reviewCount: number;
+  averagePerformance: number;
+  totalReviews: number;
+  cardsMastered: number;
+  cardsLearning: number;
+  cardsNotStarted: number;
 }
 
 export interface Card {
   id: string;
+  front: string;
+  back: string;
   deckId: string;
-  question: string;
-  answer: string;
+  userId: string;
   createdAt: Date;
   updatedAt: Date;
   lastReviewed?: Date;
   nextReview?: Date;
-  difficulty: 'easy' | 'medium' | 'hard';
+  difficulty: number;
   reviewCount: number;
-  correctCount: number;
-  tags?: string[];
+  successCount: number;
 }
 
 export interface ReviewSession {
   id: string;
   deckId: string;
   userId: string;
-  startTime: Date;
-  endTime?: Date;
+  startedAt: Date;
+  endedAt?: Date;
   cardsReviewed: number;
-  cardsCorrect: number;
-  cardsIncorrect: number;
-  averageResponseTime: number;
+  correctAnswers: number;
+  incorrectAnswers: number;
+  averageTimePerCard: number;
 }
 
 export interface ReviewStats {
   totalReviews: number;
-  correctReviews: number;
-  incorrectReviews: number;
-  averageResponseTime: number;
-  lastReviewDate?: Date;
-  streakDays: number;
-  cardsMastered: number;
-  cardsLearning: number;
-  cardsNotStarted: number;
+  correctAnswers: number;
+  incorrectAnswers: number;
+  averageTimePerCard: number;
+  streak: number;
+  lastReviewDate: Date;
 } 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { X } from 'lucide-react';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -19,24 +19,15 @@ export function CreateDeckDialog({ open, onClose }: CreateDeckDialogProps) {
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    // Check Firebase initialization
-    console.log('Firebase DB instance:', db);
-    console.log('Current user:', user);
-  }, [user]);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted', { user, title, description }); // Debug log
 
     if (!user) {
-      console.error('No user found'); // Debug log
       toast.error('You must be signed in to create a deck');
       return;
     }
 
     if (!title.trim()) {
-      console.error('No title provided'); // Debug log
       toast.error('Please enter a title for your deck');
       return;
     }
@@ -44,10 +35,7 @@ export function CreateDeckDialog({ open, onClose }: CreateDeckDialogProps) {
     setLoading(true);
 
     try {
-      console.log('Creating deck...', { userId: user.id }); // Debug log
       const deckRef = collection(db, `users/${user.id}/decks`);
-      console.log('Collection reference created'); // Debug log
-
       const docRef = await addDoc(deckRef, {
         title: title.trim(),
         description: description.trim(),
@@ -55,6 +43,7 @@ export function CreateDeckDialog({ open, onClose }: CreateDeckDialogProps) {
         cards: [],
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
+        lastStudied: null,
         reviewCount: 0,
         averagePerformance: 0,
         totalReviews: 0,
@@ -62,8 +51,6 @@ export function CreateDeckDialog({ open, onClose }: CreateDeckDialogProps) {
         cardsLearning: 0,
         cardsNotStarted: 0
       });
-
-      console.log('Document created:', docRef.id); // Debug log
 
       if (!docRef.id) {
         throw new Error('Failed to create deck');
