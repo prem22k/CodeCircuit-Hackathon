@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { useDeck } from '@/hooks/useDeck';
-import { useSRS } from '@/hooks/useSRS';
+import { useDecks } from '@/hooks/useDecks';
+import { useReviewHistory } from '@/hooks/useReviewHistory';
 import { motion } from 'framer-motion';
 import { 
   BarChart, 
@@ -23,11 +23,15 @@ import {
   CheckCircle, 
   Clock, 
   TrendingUp,
-  ArrowRight
+  ArrowRight,
+  Brain,
+  Zap,
+  Sparkles,
+  Flame
 } from 'lucide-react';
 import { CalendarHeatmap } from '@/components/CalendarHeatmap';
 import { StreakNotification } from '@/components/StreakNotification';
-import { useReviewHistory } from '@/hooks/useReviewHistory';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { db } from '@/lib/firebase';
 import { collection, getDocs } from 'firebase/firestore';
 
@@ -39,21 +43,21 @@ interface Deck {
     question: string;
     answer: string;
   }>;
+  reviewCount?: number;
+  averagePerformance?: number;
 }
 
 export default function DashboardPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
-  const [decks, setDecks] = useState<Deck[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+  const { decks, loading: decksLoading } = useDecks();
   const [stats, setStats] = useState({
     totalCards: 0,
-    masteredCards: 0,
-    dueCards: 0,
+    totalReviews: 0,
+    averagePerformance: 0,
     reviewStreak: 0
   });
-  const { dailyStats, streak, loading: historyLoading } = useReviewHistory();
+  const { dailyStats, streak, loading: historyLoading } = useReviewHistory('all');
   const [lastReviewDate, setLastReviewDate] = useState<Date | null>(null);
 
   useEffect(() => {
@@ -63,117 +67,44 @@ export default function DashboardPage() {
   }, [user, authLoading, router]);
 
   useEffect(() => {
-    const loadDashboardData = async () => {
-      if (!user) return;
+    if (decks) {
+      const totalCards = decks.reduce((sum, deck) => sum + (deck.cards?.length || 0), 0);
+      const totalReviews = decks.reduce((sum, deck) => sum + (deck.reviewCount || 0), 0);
+      const averagePerformance = decks.reduce((sum, deck) => sum + (deck.averagePerformance || 0), 0) / (decks.length || 1);
 
-      try {
-        setLoading(true);
-        // Load user's decks
-        const decksRef = collection(db, 'users', user.id, 'decks');
-        const decksSnapshot = await getDocs(decksRef);
-        const decksData = decksSnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        })) as Deck[];
-        setDecks(decksData);
+      setStats({
+        totalCards,
+        totalReviews,
+        averagePerformance,
+        reviewStreak: streak
+      });
+    }
+  }, [decks, streak]);
 
-        // Calculate stats
-        let totalCards = 0;
-        let masteredCards = 0;
-        let dueCards = 0;
-
-        for (const deck of decksData) {
-          const { reviews } = await useSRS(deck.id);
-          const deckCards = deck.cards || [];
-          totalCards += deckCards.length;
-          
-          // Count mastered cards (box 4 or higher)
-          masteredCards += Object.values(reviews).filter(
-            review => review.box >= 4
-          ).length;
-
-          // Count due cards
-          dueCards += Object.values(reviews).filter(
-            review => new Date(review.nextReview) <= new Date()
-          ).length;
-        }
-
-        setStats({
-          totalCards,
-          masteredCards,
-          dueCards,
-          reviewStreak: streak
-        });
-
-        // Update last review date
-        if (dailyStats.length > 0) {
-          const lastReview = dailyStats[dailyStats.length - 1];
-          setLastReviewDate(new Date(lastReview.date));
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err : new Error('Failed to load dashboard data'));
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadDashboardData();
-  }, [user, dailyStats, streak]);
-
-  if (authLoading || loading) {
+  if (authLoading || decksLoading || historyLoading) {
     return (
       <div className="flex justify-center items-center min-h-[60vh]">
-        <div className="animate-spin w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full" />
+        <LoadingSpinner />
       </div>
     );
   }
-
-  if (error) {
-    return (
-      <div className="text-center py-12">
-        <h2 className="text-2xl font-bold text-red-500 mb-4">Error</h2>
-        <p className="text-gray-600 dark:text-gray-400">{error.message}</p>
-      </div>
-    );
-  }
-
-  // Sample data for charts - replace with real data
-  const reviewHistory = [
-    { date: 'Mon', reviews: 12 },
-    { date: 'Tue', reviews: 8 },
-    { date: 'Wed', reviews: 15 },
-    { date: 'Thu', reviews: 10 },
-    { date: 'Fri', reviews: 20 },
-    { date: 'Sat', reviews: 5 },
-    { date: 'Sun', reviews: 18 }
-  ];
-
-  const masteryProgress = [
-    { name: 'Mastered', value: stats.masteredCards },
-    { name: 'Learning', value: stats.totalCards - stats.masteredCards }
-  ];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      <StreakNotification streak={streak} lastReviewDate={lastReviewDate} />
-      
+    <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-8">Dashboard</h1>
 
-      {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="card p-6"
+          className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6"
         >
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-primary-100 dark:bg-primary-900 rounded-xl">
-              <BookOpen className="w-6 h-6 text-primary-500" />
-            </div>
+          <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Cards</h3>
-              <p className="text-2xl font-bold">{stats.totalCards}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Total Cards</p>
+              <h3 className="text-2xl font-bold">{stats.totalCards}</h3>
             </div>
+            <BookOpen className="w-8 h-8 text-primary-500" />
           </div>
         </motion.div>
 
@@ -181,16 +112,14 @@ export default function DashboardPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="card p-6"
+          className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6"
         >
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-green-100 dark:bg-green-900 rounded-xl">
-              <CheckCircle className="w-6 h-6 text-green-500" />
-            </div>
+          <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400">Mastered</h3>
-              <p className="text-2xl font-bold">{stats.masteredCards}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Total Reviews</p>
+              <h3 className="text-2xl font-bold">{stats.totalReviews}</h3>
             </div>
+            <Zap className="w-8 h-8 text-primary-500" />
           </div>
         </motion.div>
 
@@ -198,16 +127,14 @@ export default function DashboardPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="card p-6"
+          className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6"
         >
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-yellow-100 dark:bg-yellow-900 rounded-xl">
-              <Clock className="w-6 h-6 text-yellow-500" />
-            </div>
+          <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400">Due Today</h3>
-              <p className="text-2xl font-bold">{stats.dueCards}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Average Performance</p>
+              <h3 className="text-2xl font-bold">{stats.averagePerformance.toFixed(1)}%</h3>
             </div>
+            <Sparkles className="w-8 h-8 text-primary-500" />
           </div>
         </motion.div>
 
@@ -215,116 +142,73 @@ export default function DashboardPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="card p-6"
+          className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6"
         >
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-xl">
-              <TrendingUp className="w-6 h-6 text-blue-500" />
-            </div>
+          <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400">Review Streak</h3>
-              <p className="text-2xl font-bold">{stats.reviewStreak} days</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Current Streak</p>
+              <h3 className="text-2xl font-bold">{stats.reviewStreak} days</h3>
             </div>
+            <Flame className="w-8 h-8 text-primary-500" />
           </div>
         </motion.div>
       </div>
 
-      {/* Calendar Heatmap */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        className="card p-6 mb-12"
-      >
-        <h2 className="text-xl font-bold mb-4">Review Activity</h2>
-        <CalendarHeatmap
-          data={dailyStats.map(stat => ({
-            date: stat.date,
-            value: stat.reviews
-          }))}
-        />
-      </motion.div>
-
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-        {/* Review History Chart */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="card p-6"
+          transition={{ delay: 0.4 }}
+          className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6"
         >
-          <h2 className="text-xl font-bold mb-4">Review History</h2>
-          <div className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={reviewHistory}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip />
-                <Line
-                  type="monotone"
-                  dataKey="reviews"
-                  stroke="#6366f1"
-                  strokeWidth={2}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
+          <h2 className="text-xl font-bold mb-4">Recent Activity</h2>
+          {dailyStats.length > 0 ? (
+            <div className="space-y-4">
+              {dailyStats.slice(0, 5).map((stat) => (
+                <div key={stat.date} className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <Calendar className="w-5 h-5 text-gray-400 mr-2" />
+                    <span>{new Date(stat.date).toLocaleDateString()}</span>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm text-gray-500">{stat.reviews} reviews</p>
+                    <p className="text-sm text-gray-500">{stat.averagePerformance.toFixed(1)}% avg</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-500">No recent activity</p>
+          )}
         </motion.div>
 
-        {/* Mastery Progress Chart */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="card p-6"
+          transition={{ delay: 0.5 }}
+          className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6"
         >
-          <h2 className="text-xl font-bold mb-4">Mastery Progress</h2>
-          <div className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={masteryProgress}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="value" fill="#6366f1" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+          <h2 className="text-xl font-bold mb-4">Your Decks</h2>
+          {decks && decks.length > 0 ? (
+            <div className="space-y-4">
+              {decks.slice(0, 5).map((deck) => (
+                <div key={deck.id} className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <Brain className="w-5 h-5 text-gray-400 mr-2" />
+                    <span>{deck.title}</span>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm text-gray-500">{deck.cards?.length || 0} cards</p>
+                    <p className="text-sm text-gray-500">{deck.reviewCount || 0} reviews</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-500">No decks yet</p>
+          )}
         </motion.div>
       </div>
-
-      {/* Upcoming Reviews */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        className="card p-6"
-      >
-        <h2 className="text-xl font-bold mb-4">Upcoming Reviews</h2>
-        <div className="space-y-4">
-          {decks.map(deck => (
-            <div
-              key={deck.id}
-              className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg"
-            >
-              <div>
-                <h3 className="font-semibold">{deck.title}</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {deck.cards?.length || 0} cards
-                </p>
-              </div>
-              <button
-                onClick={() => router.push(`/review/${deck.id}`)}
-                className="btn btn-primary btn-sm gap-2"
-              >
-                Review
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
-          ))}
-        </div>
-      </motion.div>
     </div>
   );
 } 

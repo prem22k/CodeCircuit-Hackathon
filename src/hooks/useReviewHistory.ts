@@ -28,12 +28,16 @@ export interface DailyStats {
 export function useReviewHistory(deckId: string, limit: number = 50) {
   const { user } = useAuth();
   const [records, setRecords] = useState<ReviewRecord[]>([]);
+  const [dailyStats, setDailyStats] = useState<DailyStats[]>([]);
+  const [streak, setStreak] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
     if (!user || !deckId) {
       setRecords([]);
+      setDailyStats([]);
+      setStreak(0);
       setLoading(false);
       return;
     }
@@ -56,6 +60,14 @@ export function useReviewHistory(deckId: string, limit: number = 50) {
         })) as ReviewRecord[];
 
         setRecords(historyData);
+        
+        // Calculate daily stats
+        const stats = calculateDailyStats(historyData);
+        setDailyStats(stats);
+
+        // Calculate streak
+        const currentStreak = calculateStreak(historyData);
+        setStreak(currentStreak);
       } catch (err) {
         console.error('Error loading review history:', err);
         setError(err instanceof Error ? err : new Error('Failed to load review history'));
@@ -67,7 +79,7 @@ export function useReviewHistory(deckId: string, limit: number = 50) {
     loadHistory();
   }, [user, deckId, limit]);
 
-  return { records, loading, error };
+  return { records, dailyStats, streak, loading, error };
 }
 
 function calculateDailyStats(reviews: ReviewRecord[]): DailyStats[] {
