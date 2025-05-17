@@ -31,10 +31,20 @@ import { useReviewHistory } from '@/hooks/useReviewHistory';
 import { db } from '@/lib/firebase';
 import { collection, getDocs } from 'firebase/firestore';
 
+interface Deck {
+  id: string;
+  title: string;
+  cards?: Array<{
+    id: string;
+    question: string;
+    answer: string;
+  }>;
+}
+
 export default function DashboardPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
-  const [decks, setDecks] = useState<any[]>([]);
+  const [decks, setDecks] = useState<Deck[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [stats, setStats] = useState({
@@ -64,7 +74,7 @@ export default function DashboardPage() {
         const decksData = decksSnapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data()
-        }));
+        })) as Deck[];
         setDecks(decksData);
 
         // Calculate stats
@@ -74,7 +84,7 @@ export default function DashboardPage() {
 
         for (const deck of decksData) {
           const { reviews } = await useSRS(deck.id);
-          const deckCards = Array.isArray(deck.cards) ? deck.cards : [];
+          const deckCards = deck.cards || [];
           totalCards += deckCards.length;
           
           // Count mastered cards (box 4 or higher)
@@ -92,7 +102,7 @@ export default function DashboardPage() {
           totalCards,
           masteredCards,
           dueCards,
-          reviewStreak: 0 // TODO: Implement streak tracking
+          reviewStreak: streak
         });
 
         // Update last review date
@@ -108,7 +118,7 @@ export default function DashboardPage() {
     };
 
     loadDashboardData();
-  }, [user]);
+  }, [user, dailyStats, streak]);
 
   if (authLoading || loading) {
     return (
