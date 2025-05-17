@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { useAuth } from './useAuth';
+import { useAuth } from '@/contexts/AuthContext';
 import { Deck } from '@/types/firebase';
 
 export function useDeck(deckId: string) {
