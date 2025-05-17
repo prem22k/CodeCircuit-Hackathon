@@ -34,11 +34,11 @@ export function CreateDeckDialog({ open, onClose }: CreateDeckDialogProps) {
     setLoading(true);
 
     try {
-      const deckRef = collection(db, `users/${user.uid}/decks`);
+      const deckRef = collection(db, `users/${user.id}/decks`);
       await addDoc(deckRef, {
         title: title.trim(),
         description: description.trim(),
-        userId: user.uid,
+        userId: user.id,
         cards: [],
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),

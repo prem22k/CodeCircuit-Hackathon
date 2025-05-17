@@ -11,12 +11,6 @@ import { db } from '@/lib/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { Deck, Card } from '@/types/firebase';
 
-interface Deck {
-  id: string;
-  title: string;
-  cards: Card[];
-}
-
 export default function ReviewPage({ params }: { params: { deckId: string } }) {
   const deckId = params?.deckId as string;
   const router = useRouter();

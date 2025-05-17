@@ -17,7 +17,7 @@ export function useDeck(deckId: string) {
       return;
     }
 
-    const deckRef = doc(db, `users/${user.uid}/decks/${deckId}`);
+    const deckRef = doc(db, `users/${user.id}/decks/${deckId}`);
 
     const unsubscribe = onSnapshot(
       deckRef,

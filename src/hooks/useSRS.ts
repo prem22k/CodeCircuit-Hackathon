@@ -17,7 +17,7 @@ export function useSRS(deckId: string) {
     const loadReviews = async () => {
       try {
         setLoading(true);
-        const reviewsRef = doc(db, 'users', user.uid, 'decks', deckId, 'srs', 'reviews');
+        const reviewsRef = doc(db, 'users', user.id, 'decks', deckId, 'srs', 'reviews');
         const reviewsDoc = await getDoc(reviewsRef);
         
         if (reviewsDoc.exists()) {
@@ -42,7 +42,7 @@ export function useSRS(deckId: string) {
     if (!user || !deckId) return;
 
     try {
-      const reviewsRef = doc(db, 'users', user.uid, 'decks', deckId, 'srs', 'reviews');
+      const reviewsRef = doc(db, 'users', user.id, 'decks', deckId, 'srs', 'reviews');
       await setDoc(reviewsRef, newReviews);
       setReviews(newReviews);
     } catch (err) {
