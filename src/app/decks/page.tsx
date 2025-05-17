@@ -117,6 +117,10 @@ export default function DecksPage() {
         updatedAt: new Date(),
       });
 
+      if (!updatedDeck) {
+        throw new Error('Failed to update deck');
+      }
+
       setDecks(decks.map(deck => 
         deck.id === selectedDeck.id ? updatedDeck : deck
       ));
