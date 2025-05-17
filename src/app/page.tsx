@@ -129,7 +129,7 @@ export default function HomePage() {
             >
               <div className="relative aspect-square max-w-sm lg:max-w-lg w-full drop-shadow-2xl">
                 <Image
-                  src={theme === 'dark' ? '/dark-hero.png' : '/light-hero.png'}
+                  src={theme === 'dark' ? '/dark.png' : '/light.png'}
                   alt="Student studying illustration"
                   fill
                   className="object-contain transition-opacity duration-300"
