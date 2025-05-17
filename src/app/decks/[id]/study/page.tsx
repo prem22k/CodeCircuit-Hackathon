@@ -57,6 +57,7 @@ export default function StudyPage() {
     incorrect: 0,
     remaining: 0
   });
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -138,24 +139,43 @@ export default function StudyPage() {
         nextReviewDate.setDate(now.getDate() + 1);
     }
 
+    setSaving(true); // Indicate saving is in progress
+
     try {
       const deckRef = doc(db, `users/${user.id}/decks/${deckId}`);
-      const updatedCards = deck.cards.map((c: Card) => {
-        if (c.id === card.id) {
-          return {
-            ...c,
-            difficulty: difficulty,
-            lastReviewed: now,
-            nextReview: nextReviewDate
-          };
-        }
-        return c;
-      });
+      // To avoid potential issues with arrayUnion and updating existing cards, 
+      // a safer approach would be to fetch the deck's cards, find the specific card, 
+      // update it, and then update the entire cards array. 
+      // However, given the current structure, we'll proceed with a modified update.
 
-      await updateDoc(deckRef, {
-        cards: updatedCards,
-        reviewCount: (deck.reviewCount || 0) + 1
-      });
+      // Find the index of the card to update
+      const cardIndexToUpdate = deck.cards.findIndex((c: any) => c.id === card.id);
+
+      if (cardIndexToUpdate > -1) {
+        const updatedCards = [...deck.cards];
+        updatedCards[cardIndexToUpdate] = {
+          ...updatedCards[cardIndexToUpdate],
+          difficulty: difficulty,
+          lastReviewed: now,
+          nextReview: nextReviewDate,
+          // Ensure other properties are carried over if the type is 'any'
+          front: card.front, // Assuming front and back are always present
+          back: card.back,
+           // Copy other potential fields if necessary
+        };
+
+         // Update the entire cards array for simplicity in this iteration
+        await updateDoc(deckRef, {
+          cards: updatedCards,
+          reviewCount: (deck.reviewCount || 0) + 1
+        });
+
+      } else {
+           console.error('Card not found in deck for update:', card.id);
+           toast.error('Failed to update card: Card not found in deck.');
+            setSaving(false);
+           return;
+      }
 
       setSessionStats(prev => ({
         ...prev,
@@ -163,6 +183,8 @@ export default function StudyPage() {
         incorrect: difficulty === 1 ? prev.incorrect + 1 : prev.incorrect, // Count incorrect if 'Hard'
         remaining: prev.remaining > 0 ? prev.remaining - 1 : 0 // Prevent negative remaining count
       }));
+
+      toast.success('Card updated!');
 
       // Move to next card after a slight delay to allow stat update visibility
       setTimeout(() => {
@@ -174,11 +196,12 @@ export default function StudyPage() {
           toast.success('Study session complete!');
           router.push(`/decks/${deckId}`);
         }
-      }, 300);
+      }, 500); // Increased delay slightly
 
     } catch (error) {
       console.error('Error updating card:', error);
       toast.error('Failed to update card');
+       setSaving(false);
     }
   };
 
@@ -284,9 +307,9 @@ export default function StudyPage() {
           whileTap={{ scale: 0.95 }}
           onClick={() => updateCardDifficulty(1)}
           className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl shadow-md transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          disabled={!isFlipped}
+          disabled={!isFlipped || saving} // Disable while saving
         >
-          <XCircle className="w-5 h-5" />
+           {saving && !isFlipped ? <LoadingSpinner className="w-5 h-5" /> : <XCircle className="w-5 h-5" />}
           Hard
         </motion.button>
         <motion.button
@@ -294,9 +317,9 @@ export default function StudyPage() {
           whileTap={{ scale: 0.95 }}
           onClick={() => updateCardDifficulty(2)}
           className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl shadow-md transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          disabled={!isFlipped}
+          disabled={!isFlipped || saving} // Disable while saving
         >
-          <CheckCircle2 className="w-5 h-5" />
+           {saving && !isFlipped ? <LoadingSpinner className="w-5 h-5" /> : <CheckCircle2 className="w-5 h-5" />}
           Good
         </motion.button>
         <motion.button
@@ -304,9 +327,9 @@ export default function StudyPage() {
           whileTap={{ scale: 0.95 }}
           onClick={() => updateCardDifficulty(3)}
           className="px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl shadow-md transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          disabled={!isFlipped}
+          disabled={!isFlipped || saving} // Disable while saving
         >
-          <Target className="w-5 h-5" />
+           {saving && !isFlipped ? <LoadingSpinner className="w-5 h-5" /> : <Target className="w-5 h-5" />}
           Easy
         </motion.button>
       </div>
