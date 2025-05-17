@@ -1,7 +1,6 @@
 'use client';
 
 import { Inter } from 'next/font/google';
-import { Metadata } from 'next';
 import { usePathname } from 'next/navigation';
 import { NavBar } from '@/components/layout/NavBar';
 import { Footer } from '@/components/Footer';
@@ -10,11 +9,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import './globals.css';
 
 const inter = Inter({ subsets: ['latin'] });
-
-export const metadata: Metadata = {
-  title: 'BrainBoost - Smart Flashcards',
-  description: 'Learn smarter with AI-powered flashcards',
-};
 
 export default function RootLayout({
   children,
