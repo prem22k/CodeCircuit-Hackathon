@@ -4,16 +4,28 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDeck } from '@/hooks/useDeck';
+import { useSRS } from '@/hooks/useSRS';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, ArrowRight, RotateCcw, Check, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, RotateCcw, Check, X, Star } from 'lucide-react';
+import { db } from '@/lib/firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 export default function ReviewPage({ params }: { params: { deckId: string } }) {
   const deckId = params?.deckId as string;
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
-  const { deck, loading: deckLoading, error } = useDeck(deckId);
+  const { deck, loading: deckLoading, error: deckError } = useDeck(deckId);
+  const { 
+    reviews, 
+    loading: srsLoading, 
+    error: srsError,
+    processCardReview,
+    initializeCard
+  } = useSRS(deckId);
+  
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
+  const [showRating, setShowRating] = useState(false);
   const [reviewedCards, setReviewedCards] = useState<Set<string>>(new Set());
 
   useEffect(() => {
@@ -22,7 +34,18 @@ export default function ReviewPage({ params }: { params: { deckId: string } }) {
     }
   }, [user, authLoading, router]);
 
-  if (authLoading || deckLoading) {
+  // Initialize SRS for new cards
+  useEffect(() => {
+    if (deck && !srsLoading) {
+      deck.cards.forEach(card => {
+        if (!reviews[card.id]) {
+          initializeCard(card.id);
+        }
+      });
+    }
+  }, [deck, reviews, srsLoading, initializeCard]);
+
+  if (authLoading || deckLoading || srsLoading) {
     return (
       <div className="flex justify-center items-center min-h-[60vh]">
         <div className="animate-spin w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full" />
@@ -30,11 +53,13 @@ export default function ReviewPage({ params }: { params: { deckId: string } }) {
     );
   }
 
-  if (error) {
+  if (deckError || srsError) {
     return (
       <div className="text-center py-12">
         <h2 className="text-2xl font-bold text-red-500 mb-4">Error</h2>
-        <p className="text-gray-600 dark:text-gray-400">{error}</p>
+        <p className="text-gray-600 dark:text-gray-400">
+          {deckError?.message || srsError?.message || 'An error occurred while loading the deck'}
+        </p>
       </div>
     );
   }
@@ -51,10 +76,14 @@ export default function ReviewPage({ params }: { params: { deckId: string } }) {
   const currentCard = deck.cards[currentCardIndex];
   const progress = (currentCardIndex / deck.cards.length) * 100;
 
-  const handleNext = () => {
+  const handleNext = async (performance?: number) => {
     if (currentCardIndex < deck.cards.length - 1) {
+      if (performance !== undefined) {
+        await processCardReview(currentCard.id, performance);
+      }
       setCurrentCardIndex(prev => prev + 1);
       setIsFlipped(false);
+      setShowRating(false);
     }
   };
 
@@ -62,20 +91,39 @@ export default function ReviewPage({ params }: { params: { deckId: string } }) {
     if (currentCardIndex > 0) {
       setCurrentCardIndex(prev => prev - 1);
       setIsFlipped(false);
+      setShowRating(false);
     }
   };
 
   const handleFlip = () => {
     setIsFlipped(!isFlipped);
+    if (!isFlipped) {
+      setShowRating(true);
+    }
   };
 
-  const handleMarkReviewed = () => {
-    setReviewedCards(prev => {
-      const newSet = new Set(prev);
-      newSet.add(currentCard.id);
-      return newSet;
-    });
-    handleNext();
+  const handleRating = async (rating: number) => {
+    if (!user) return;
+
+    try {
+      // Process the review in SRS
+      await processCardReview(currentCard.id, rating);
+
+      // Record review history
+      const reviewHistoryRef = collection(db, 'users', user.uid, 'reviewHistory');
+      await addDoc(reviewHistoryRef, {
+        deckId,
+        cardId: currentCard.id,
+        performance: rating,
+        timestamp: serverTimestamp()
+      });
+
+      // Move to next card
+      await handleNext();
+    } catch (err) {
+      console.error('Failed to process review:', err);
+      // You might want to show an error message to the user here
+    }
   };
 
   return (
@@ -137,32 +185,52 @@ export default function ReviewPage({ params }: { params: { deckId: string } }) {
         </AnimatePresence>
       </div>
 
-      {/* Controls */}
-      <div className="flex justify-center gap-4">
-        <button
-          onClick={handlePrevious}
-          disabled={currentCardIndex === 0}
-          className="btn btn-ghost"
-        >
-          <ArrowLeft className="w-5 h-5" />
-          Previous
-        </button>
-        <button
-          onClick={handleFlip}
-          className="btn btn-ghost"
-        >
-          <RotateCcw className="w-5 h-5" />
-          Flip
-        </button>
-        <button
-          onClick={handleMarkReviewed}
-          disabled={currentCardIndex === deck.cards.length - 1}
-          className="btn btn-ghost"
-        >
-          Next
-          <ArrowRight className="w-5 h-5" />
-        </button>
-      </div>
+      {/* Rating or Controls */}
+      {showRating ? (
+        <div className="flex justify-center gap-4">
+          {[1, 2, 3, 4, 5].map((rating) => (
+            <button
+              key={rating}
+              onClick={() => handleRating(rating)}
+              className="btn btn-ghost btn-circle hover:scale-110 transition-transform"
+              title={`Rate ${rating}/5`}
+            >
+              <Star
+                className={`w-6 h-6 ${
+                  rating <= 3 ? 'text-red-500' : 'text-green-500'
+                }`}
+                fill="currentColor"
+              />
+            </button>
+          ))}
+        </div>
+      ) : (
+        <div className="flex justify-center gap-4">
+          <button
+            onClick={handlePrevious}
+            disabled={currentCardIndex === 0}
+            className="btn btn-ghost"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            Previous
+          </button>
+          <button
+            onClick={handleFlip}
+            className="btn btn-ghost"
+          >
+            <RotateCcw className="w-5 h-5" />
+            Flip
+          </button>
+          <button
+            onClick={() => handleNext()}
+            disabled={currentCardIndex === deck.cards.length - 1}
+            className="btn btn-ghost"
+          >
+            Skip
+            <ArrowRight className="w-5 h-5" />
+          </button>
+        </div>
+      )}
 
       {/* Card Counter */}
       <div className="text-center mt-8 text-gray-600 dark:text-gray-400">
