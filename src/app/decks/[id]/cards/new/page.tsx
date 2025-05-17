@@ -20,7 +20,9 @@ import Image from 'next/image';
 import { useTheme } from 'next-themes';
 
 export default function NewCardPage() {
-  const { id } = useParams();
+  const params = useParams();
+  const deckId = Array.isArray(params?.id) ? params.id[0] : params?.id;
+
   const router = useRouter();
   const { user } = useAuth();
   const { theme } = useTheme();
@@ -33,9 +35,20 @@ export default function NewCardPage() {
   const [isAnimating, setIsAnimating] = useState(false);
 
   useEffect(() => {
-    if (!user || !id) return;
+    if (!user) {
+      router.push('/login');
+      return;
+    }
+    
+    // Ensure deckId is a string before fetching
+    if (typeof deckId !== 'string') {
+        setLoading(false);
+        toast.error('Invalid deck ID.');
+        router.push('/decks'); // Redirect to decks list
+        return;
+    }
 
-    const deckRef = doc(db, `users/${user.id}/decks/${id}`);
+    const deckRef = doc(db, `users/${user.id}/decks/${deckId}`);
     const unsubscribe = onSnapshot(deckRef, (doc) => {
       if (doc.exists()) {
         setDeck({ id: doc.id, ...doc.data() });
@@ -44,10 +57,14 @@ export default function NewCardPage() {
         router.push('/decks');
       }
       setLoading(false);
+    }, (error) => {
+      console.error('Error fetching deck:', error);
+      toast.error('Failed to load deck');
+      setLoading(false);
     });
 
     return () => unsubscribe();
-  }, [user, id, router]);
+  }, [user, deckId, router]);
 
   const handleFlip = () => {
     if (isAnimating) return;
@@ -57,7 +74,7 @@ export default function NewCardPage() {
   };
 
   const handleSave = async () => {
-    if (!user || !deck) return;
+    if (!user || !deck || typeof deckId !== 'string') return; // Added deckId check here too
     if (!front.trim() || !back.trim()) {
       toast.error('Please fill in both front and back of the card');
       return;
@@ -66,7 +83,7 @@ export default function NewCardPage() {
     setSaving(true);
 
     try {
-      const deckRef = doc(db, `users/${user.id}/decks/${id}`);
+      const deckRef = doc(db, `users/${user.id}/decks/${deckId}`);
       const newCard = {
         id: Date.now().toString(),
         front: front.trim(),
@@ -82,7 +99,7 @@ export default function NewCardPage() {
       });
 
       toast.success('Card created successfully!');
-      router.push(`/decks/${id}`);
+      router.push(`/decks/${deckId}`); // Use deckId here
     } catch (error) {
       console.error('Error creating card:', error);
       toast.error('Failed to create card');
@@ -100,16 +117,17 @@ export default function NewCardPage() {
   }
 
   if (!deck) {
+    // This case is handled by the redirect in useEffect if deckId is invalid or not found
     return null;
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="flex items-center gap-4">
           <button
-            onClick={() => router.push(`/decks/${id}`)}
+            onClick={() => router.push(`/decks/${deckId}`)}
             className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
           >
             <ArrowLeft className="w-6 h-6" />
@@ -153,64 +171,61 @@ export default function NewCardPage() {
         </div>
       </div>
 
-      {/* Preview */}
-      <div className="relative h-[400px] perspective-1000">
-        <motion.div
-          className="w-full h-full relative preserve-3d cursor-pointer"
-          animate={{ rotateY: isFlipped ? 180 : 0 }}
-          transition={{ duration: 0.3 }}
-          onClick={handleFlip}
-        >
-          {/* Front */}
-          <div className={`absolute w-full h-full backface-hidden rounded-xl p-8 flex items-center justify-center text-center ${
-            isFlipped ? 'hidden' : 'block'
-          }`}>
-            <div className="bg-white dark:bg-gray-800 w-full h-full rounded-xl shadow-lg border dark:border-gray-700 p-8 flex items-center justify-center">
-              <p className="text-2xl font-medium">{front || 'Front of card'}</p>
+      {/* Preview and Form */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Preview */}
+        <div className="relative h-[400px] perspective-1000">
+          <motion.div
+            className="w-full h-full relative preserve-3d cursor-pointer rounded-xl"
+            animate={{ rotateY: isFlipped ? 180 : 0 }}
+            transition={{ duration: 0.5, ease: "easeInOut" }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={handleFlip}
+          >
+            {/* Front */}
+            <div className="absolute w-full h-full backface-hidden rounded-xl p-8 md:p-12 flex items-center justify-center text-center bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700">
+              <p className="text-2xl md:text-3xl font-semibold text-gray-900 dark:text-white">{front || 'Front of card'}</p>
             </div>
-          </div>
 
-          {/* Back */}
-          <div className={`absolute w-full h-full backface-hidden rounded-xl p-8 flex items-center justify-center text-center ${
-            isFlipped ? 'block' : 'hidden'
-          }`}>
-            <div className="bg-white dark:bg-gray-800 w-full h-full rounded-xl shadow-lg border dark:border-gray-700 p-8 flex items-center justify-center">
-              <p className="text-2xl font-medium">{back || 'Back of card'}</p>
+            {/* Back */}
+            <div className="absolute w-full h-full backface-hidden rounded-xl p-8 md:p-12 flex items-center justify-center text-center bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700" style={{ transform: 'rotateY(180deg)' }}>
+              <p className="text-2xl md:text-3xl font-semibold text-gray-900 dark:text-white">{back || 'Back of card'}</p>
             </div>
-          </div>
-        </motion.div>
-      </div>
-
-      {/* Form */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-4">
-          <label className="block">
-            <span className="text-gray-700 dark:text-gray-300">Front (Question/Term)</span>
-            <textarea
-              value={front}
-              onChange={(e) => setFront(e.target.value)}
-              className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary focus:ring-primary dark:bg-gray-800 dark:text-white"
-              rows={4}
-              placeholder="Enter the front of the card..."
-            />
-          </label>
+          </motion.div>
         </div>
-        <div className="space-y-4">
-          <label className="block">
-            <span className="text-gray-700 dark:text-gray-300">Back (Answer/Definition)</span>
-            <textarea
-              value={back}
-              onChange={(e) => setBack(e.target.value)}
-              className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary focus:ring-primary dark:bg-gray-800 dark:text-white"
-              rows={4}
-              placeholder="Enter the back of the card..."
-            />
-          </label>
+
+        {/* Form */}
+        <div className="space-y-6">
+          <div className="space-y-4">
+            <label className="block">
+              <span className="text-gray-700 dark:text-gray-300">Front (Question/Term)</span>
+              <textarea
+                value={front}
+                onChange={(e) => setFront(e.target.value)}
+                className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary focus:ring-primary dark:bg-gray-800 dark:text-white"
+                rows={6} // Increased rows for better input area
+                placeholder="Enter the front of the card..."
+              />
+            </label>
+          </div>
+          <div className="space-y-4">
+            <label className="block">
+              <span className="text-gray-700 dark:text-gray-300">Back (Answer/Definition)</span>
+              <textarea
+                value={back}
+                onChange={(e) => setBack(e.target.value)}
+                className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary focus:ring-primary dark:bg-gray-800 dark:text-white"
+                rows={6} // Increased rows for better input area
+                placeholder="Enter the back of the card..."
+              />
+            </label>
+          </div>
         </div>
       </div>
 
       {/* Tips */}
-      <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+      <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 mt-6">
         <div className="flex items-start gap-3">
           <Sparkles className="w-5 h-5 text-blue-500 dark:text-blue-400 mt-1" />
           <div>
