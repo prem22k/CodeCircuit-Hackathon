@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { useAuth } from './useAuth';
+import { useAuth } from '@/contexts/AuthContext';
 import { Deck } from '@/types/firebase';
 
 export function useDecks() {
@@ -17,8 +17,8 @@ export function useDecks() {
       return;
     }
 
-    const decksRef = collection(db, `users/${user.uid}/decks`);
-    const decksQuery = query(decksRef, orderBy('updatedAt', 'desc'));
+    const decksRef = collection(db, `users/${user.id}/decks`);
+    const decksQuery = query(decksRef, orderBy('createdAt', 'desc'));
 
     const unsubscribe = onSnapshot(
       decksQuery,

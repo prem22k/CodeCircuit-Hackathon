@@ -25,60 +25,49 @@ export interface DailyStats {
   averagePerformance: number;
 }
 
-export function useReviewHistory() {
+export function useReviewHistory(deckId: string, limit: number = 50) {
   const { user } = useAuth();
-  const [reviewHistory, setReviewHistory] = useState<ReviewRecord[]>([]);
-  const [dailyStats, setDailyStats] = useState<DailyStats[]>([]);
-  const [streak, setStreak] = useState(0);
+  const [records, setRecords] = useState<ReviewRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    const loadReviewHistory = async () => {
-      if (!user) return;
+    if (!user || !deckId) {
+      setRecords([]);
+      setLoading(false);
+      return;
+    }
 
+    const loadHistory = async () => {
       try {
         setLoading(true);
-        const reviewsRef = collection(db, 'users', user.uid, 'reviewHistory');
+        const historyRef = collection(db, `users/${user.id}/decks/${deckId}/history`);
         const q = query(
-          reviewsRef,
+          historyRef,
           orderBy('timestamp', 'desc'),
-          limit(1000)
+          limit(limit)
         );
-        
+
         const snapshot = await getDocs(q);
-        const reviews = snapshot.docs.map(doc => ({
+        const historyData = snapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data(),
           timestamp: doc.data().timestamp.toDate()
         })) as ReviewRecord[];
 
-        setReviewHistory(reviews);
-
-        // Calculate daily stats
-        const stats = calculateDailyStats(reviews);
-        setDailyStats(stats);
-
-        // Calculate streak
-        const currentStreak = calculateStreak(reviews);
-        setStreak(currentStreak);
+        setRecords(historyData);
       } catch (err) {
+        console.error('Error loading review history:', err);
         setError(err instanceof Error ? err : new Error('Failed to load review history'));
       } finally {
         setLoading(false);
       }
     };
 
-    loadReviewHistory();
-  }, [user]);
+    loadHistory();
+  }, [user, deckId, limit]);
 
-  return {
-    reviewHistory,
-    dailyStats,
-    streak,
-    loading,
-    error
-  };
+  return { records, loading, error };
 }
 
 function calculateDailyStats(reviews: ReviewRecord[]): DailyStats[] {
