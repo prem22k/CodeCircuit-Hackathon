@@ -10,7 +10,7 @@ import { Mail, Lock, User } from 'lucide-react';
 
 export default function SignupPage() {
   const router = useRouter();
-  const { signUp } = useAuth();
+  const { signUpWithEmail } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
@@ -25,7 +25,7 @@ export default function SignupPage() {
 
     try {
       setLoading(true);
-      await signUp(email, password, displayName);
+      await signUpWithEmail(email, password, displayName);
       showToast.success('Account created successfully!');
       router.push('/dashboard');
     } catch (error: any) {

@@ -4,7 +4,7 @@ import { createContext, useContext, useEffect, useState, useCallback } from 'rea
 import { User as FirebaseUser } from 'firebase/auth';
 import { auth, googleProvider } from '@/lib/firebase';
 import { User } from '@/types';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, signInWithPopup } from 'firebase/auth';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, signInWithPopup, updateProfile } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
@@ -12,7 +12,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   signInWithEmail: (email: string, password: string) => Promise<void>;
-  signUpWithEmail: (email: string, password: string) => Promise<void>;
+  signUpWithEmail: (email: string, password: string, displayName?: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -60,9 +60,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [router]);
 
-  const signUpWithEmail = useCallback(async (email: string, password: string) => {
+  const signUpWithEmail = useCallback(async (email: string, password: string, displayName?: string) => {
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      if (displayName) {
+        await updateProfile(userCredential.user, { displayName });
+      }
       toast.success('Account created successfully!');
       router.push('/decks');
     } catch (error: any) {
