@@ -119,7 +119,7 @@ export const createCard = async (card: Omit<Card, 'id'>): Promise<Card> => {
     updatedAt: new Date(),
     reviewCount: 0,
     correctCount: 0,
-    difficulty: 'medium',
+    difficulty: 0,
   });
   return {
     id: docRef.id,
@@ -128,7 +128,7 @@ export const createCard = async (card: Omit<Card, 'id'>): Promise<Card> => {
     updatedAt: new Date(),
     reviewCount: 0,
     correctCount: 0,
-    difficulty: 'medium',
+    difficulty: 0,
   };
 };
 
