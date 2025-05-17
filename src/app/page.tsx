@@ -2,12 +2,12 @@
 
 import { useRouter } from 'next/navigation';
 import { Brain, BookOpen, Zap, Sparkles, ArrowRight, ChevronRight } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContext';
 import { motion } from 'framer-motion';
 
 export default function HomePage() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
 
   const fadeInUp = {
     initial: { opacity: 0, y: 20 },
@@ -22,6 +22,14 @@ export default function HomePage() {
       }
     }
   };
+
+  if (authLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-[60vh]">
+        <div className="animate-spin w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-24">
