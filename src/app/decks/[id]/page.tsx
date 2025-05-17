@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { doc, onSnapshot, updateDoc, arrayRemove } from 'firebase/firestore';
+import { doc, onSnapshot, updateDoc, arrayRemove, collection } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
@@ -40,6 +40,7 @@ export default function DeckDetailPage() {
   const { user } = useAuth();
   const { theme } = useTheme();
   const [deck, setDeck] = useState<any>(null);
+  const [cards, setCards] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('newest');
@@ -57,31 +58,49 @@ export default function DeckDetailPage() {
 
     // Ensure deckId is a string before fetching
     if (typeof deckId !== 'string') {
-        setLoading(false);
-        toast.error('Invalid deck ID.');
-        router.push('/decks'); // Redirect to decks list
-        return;
+      setLoading(false);
+      toast.error('Invalid deck ID.');
+      router.push('/decks'); // Redirect to decks list
+      return;
     }
 
     const deckRef = doc(db, `users/${user.id}/decks/${deckId}`);
-    const unsubscribe = onSnapshot(deckRef, (doc) => {
+    const cardsRef = collection(db, `users/${user.id}/decks/${deckId}/cards`);
+
+    // Subscribe to deck changes
+    const unsubscribeDeck = onSnapshot(deckRef, (doc) => {
       if (doc.exists()) {
         setDeck({ id: doc.id, ...doc.data() });
       } else {
         toast.error('Deck not found');
         router.push('/decks');
       }
-      setLoading(false);
     }, (error) => {
       console.error('Error fetching deck:', error);
       toast.error('Failed to load deck');
+    });
+
+    // Subscribe to cards changes
+    const unsubscribeCards = onSnapshot(cardsRef, (snapshot) => {
+      const cardsData = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setCards(cardsData);
+      setLoading(false);
+    }, (error) => {
+      console.error('Error fetching cards:', error);
+      toast.error('Failed to load cards');
       setLoading(false);
     });
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribeDeck();
+      unsubscribeCards();
+    };
   }, [user, deckId, router]);
 
-  const filteredCards = deck?.cards?.filter((card: any) => {
+  const filteredCards = cards.filter((card) => {
     const matchesSearch = card.front.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          card.back.toLowerCase().includes(searchQuery.toLowerCase());
     
@@ -95,7 +114,7 @@ export default function DeckDetailPage() {
       return matchesSearch && card.difficulty === 0;
     }
     return matchesSearch;
-  }) || [];
+  });
 
   const sortedCards = [...filteredCards].sort((a: any, b: any) => {
     switch (sortBy) {
