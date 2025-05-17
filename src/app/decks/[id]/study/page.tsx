@@ -39,7 +39,9 @@ interface Deck {
 }
 
 export default function StudyPage() {
-  const { id } = useParams();
+  const params = useParams();
+  const deckId = Array.isArray(params?.id) ? params.id[0] : params?.id;
+
   const router = useRouter();
   const { user } = useAuth();
   const { theme } = useTheme();
@@ -57,9 +59,20 @@ export default function StudyPage() {
   });
 
   useEffect(() => {
-    if (!user || !id) return;
+    if (!user) {
+      router.push('/login');
+      return;
+    }
 
-    const deckRef = doc(db, `users/${user.id}/decks/${id}`);
+    // Ensure deckId is a string before fetching
+    if (typeof deckId !== 'string') {
+        setLoading(false);
+        toast.error('Invalid deck ID.');
+        router.push('/decks'); // Redirect to decks list
+        return;
+    }
+
+    const deckRef = doc(db, `users/${user.id}/decks/${deckId}`);
     const unsubscribe = onSnapshot(deckRef, (doc) => {
       if (doc.exists()) {
         const deckData = { id: doc.id, ...doc.data() } as Deck;
@@ -69,7 +82,9 @@ export default function StudyPage() {
         const now = new Date();
         const dueCards = deckData.cards?.filter((card: Card) => {
           if (!card.nextReview) return true;
-          return new Date(card.nextReview.seconds * 1000) <= now;
+          // Handle Firestore Timestamp conversion
+          const nextReviewDate = card.nextReview && card.nextReview.seconds ? new Date(card.nextReview.seconds * 1000) : new Date(0);
+          return nextReviewDate <= now;
         }) || [];
 
         // Shuffle cards
@@ -85,10 +100,14 @@ export default function StudyPage() {
         router.push('/decks');
       }
       setLoading(false);
+    }, (error) => {
+      console.error('Error fetching deck:', error);
+      toast.error('Failed to load deck');
+      setLoading(false);
     });
 
     return () => unsubscribe();
-  }, [user, id, router]);
+  }, [user, deckId, router]);
 
   const handleFlip = () => {
     if (isAnimating) return;
@@ -98,7 +117,7 @@ export default function StudyPage() {
   };
 
   const updateCardDifficulty = async (difficulty: number) => {
-    if (!user || !deck || !cards[currentCardIndex]) return;
+    if (!user || !deck || !cards[currentCardIndex] || typeof deckId !== 'string') return; // Added deckId check here too
 
     const card = cards[currentCardIndex];
     const now = new Date();
@@ -120,7 +139,7 @@ export default function StudyPage() {
     }
 
     try {
-      const deckRef = doc(db, `users/${user.id}/decks/${id}`);
+      const deckRef = doc(db, `users/${user.id}/decks/${deckId}`);
       const updatedCards = deck.cards.map((c: Card) => {
         if (c.id === card.id) {
           return {
@@ -140,20 +159,23 @@ export default function StudyPage() {
 
       setSessionStats(prev => ({
         ...prev,
-        correct: difficulty > 1 ? prev.correct + 1 : prev.correct,
-        incorrect: difficulty === 1 ? prev.incorrect + 1 : prev.incorrect,
-        remaining: prev.remaining - 1
+        correct: difficulty > 1 ? prev.correct + 1 : prev.correct, // Count correct if not 'Hard'
+        incorrect: difficulty === 1 ? prev.incorrect + 1 : prev.incorrect, // Count incorrect if 'Hard'
+        remaining: prev.remaining > 0 ? prev.remaining - 1 : 0 // Prevent negative remaining count
       }));
 
-      // Move to next card
-      if (currentCardIndex < cards.length - 1) {
-        setCurrentCardIndex(prev => prev + 1);
-        setIsFlipped(false);
-      } else {
-        // Session complete
-        toast.success('Study session complete!');
-        router.push(`/decks/${id}`);
-      }
+      // Move to next card after a slight delay to allow stat update visibility
+      setTimeout(() => {
+        if (currentCardIndex < cards.length - 1) {
+          setCurrentCardIndex(prev => prev + 1);
+          setIsFlipped(false);
+        } else {
+          // Session complete
+          toast.success('Study session complete!');
+          router.push(`/decks/${deckId}`);
+        }
+      }, 300);
+
     } catch (error) {
       console.error('Error updating card:', error);
       toast.error('Failed to update card');
@@ -169,23 +191,25 @@ export default function StudyPage() {
   }
 
   if (!deck || cards.length === 0) {
+    // This case is handled by the redirect in useEffect if deckId is invalid or not found
+    // The no cards due message is also handled here
     return (
-      <div className="text-center py-12">
-        <div className="w-32 h-32 mx-auto mb-6 relative">
+      <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 max-w-md mx-auto">
+        <div className="w-32 h-32 mx-auto mb-6 relative opacity-70">
           <Image
             src={theme === 'dark' ? '/dark.png' : '/light.png'}
             alt="No cards"
             fill
-            className="object-contain opacity-50"
+            className="object-contain"
           />
         </div>
-        <h3 className="text-xl font-semibold mb-2">No cards due for review</h3>
+        <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">No cards due for review</h3>
         <p className="text-gray-600 dark:text-gray-400 mb-6">
           All cards are up to date! Come back later for your next review.
         </p>
         <button
-          onClick={() => router.push(`/decks/${id}`)}
-          className="btn btn-primary"
+          onClick={() => router.push(`/decks/${deckId}`)}
+          className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
         >
           Return to Deck
         </button>
@@ -196,18 +220,18 @@ export default function StudyPage() {
   const currentCard = cards[currentCardIndex];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-6 lg:p-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-700">
         <div className="flex items-center gap-4">
           <button
-            onClick={() => router.push(`/decks/${id}`)}
-            className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
+            onClick={() => router.push(`/decks/${deckId}`)}
+            className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
           >
             <ArrowLeft className="w-6 h-6" />
           </button>
           <div>
-            <h1 className="text-2xl font-bold">{deck.title}</h1>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{deck.title}</h1>
             <p className="text-gray-600 dark:text-gray-400">
               Card {currentCardIndex + 1} of {cards.length}
             </p>
@@ -215,18 +239,18 @@ export default function StudyPage() {
         </div>
 
         {/* Stats */}
-        <div className="flex gap-4">
-          <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
+        <div className="flex gap-6">
+          <div className="flex items-center gap-2 text-green-600 dark:text-green-400 font-semibold">
             <CheckCircle2 className="w-5 h-5" />
-            <span>{sessionStats.correct}</span>
+            <span>Correct: {sessionStats.correct}</span>
           </div>
-          <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
+          <div className="flex items-center gap-2 text-red-600 dark:text-red-400 font-semibold">
             <XCircle className="w-5 h-5" />
-            <span>{sessionStats.incorrect}</span>
+            <span>Incorrect: {sessionStats.incorrect}</span>
           </div>
-          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 font-semibold">
             <BookOpen className="w-5 h-5" />
-            <span>{sessionStats.remaining}</span>
+            <span>Remaining: {sessionStats.remaining}</span>
           </div>
         </div>
       </div>
@@ -234,63 +258,63 @@ export default function StudyPage() {
       {/* Flashcard */}
       <div className="relative h-[400px] perspective-1000">
         <motion.div
-          className="w-full h-full relative preserve-3d cursor-pointer"
+          className="w-full h-full relative preserve-3d cursor-pointer rounded-xl"
           animate={{ rotateY: isFlipped ? 180 : 0 }}
-          transition={{ duration: 0.3 }}
+          transition={{ duration: 0.5, ease: "easeInOut" }}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
           onClick={handleFlip}
         >
           {/* Front */}
-          <div className={`absolute w-full h-full backface-hidden rounded-xl p-8 flex items-center justify-center text-center ${
-            isFlipped ? 'hidden' : 'block'
-          }`}>
-            <div className="bg-white dark:bg-gray-800 w-full h-full rounded-xl shadow-lg border dark:border-gray-700 p-8 flex items-center justify-center">
-              <p className="text-2xl font-medium">{currentCard.front}</p>
-            </div>
+          <div className="absolute w-full h-full backface-hidden rounded-xl p-8 md:p-12 flex items-center justify-center text-center bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700">
+            <p className="text-2xl md:text-3xl font-semibold text-gray-900 dark:text-white">{currentCard.front}</p>
           </div>
 
           {/* Back */}
-          <div className={`absolute w-full h-full backface-hidden rounded-xl p-8 flex items-center justify-center text-center ${
-            isFlipped ? 'block' : 'hidden'
-          }`}>
-            <div className="bg-white dark:bg-gray-800 w-full h-full rounded-xl shadow-lg border dark:border-gray-700 p-8 flex items-center justify-center">
-              <p className="text-2xl font-medium">{currentCard.back}</p>
-            </div>
+          <div className="absolute w-full h-full backface-hidden rounded-xl p-8 md:p-12 flex items-center justify-center text-center bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700" style={{ transform: 'rotateY(180deg)' }}>
+            <p className="text-2xl md:text-3xl font-semibold text-gray-900 dark:text-white">{currentCard.back}</p>
           </div>
         </motion.div>
       </div>
 
       {/* Controls */}
-      <div className="flex justify-center gap-4">
-        <button
+      <div className="flex justify-center gap-4 mt-6">
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           onClick={() => updateCardDifficulty(1)}
-          className="btn btn-danger flex items-center gap-2"
+          className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl shadow-md transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           disabled={!isFlipped}
         >
           <XCircle className="w-5 h-5" />
           Hard
-        </button>
-        <button
+        </motion.button>
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           onClick={() => updateCardDifficulty(2)}
-          className="btn btn-primary flex items-center gap-2"
+          className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl shadow-md transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           disabled={!isFlipped}
         >
           <CheckCircle2 className="w-5 h-5" />
           Good
-        </button>
-        <button
+        </motion.button>
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           onClick={() => updateCardDifficulty(3)}
-          className="btn btn-success flex items-center gap-2"
+          className="px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl shadow-md transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           disabled={!isFlipped}
         >
           <Target className="w-5 h-5" />
           Easy
-        </button>
+        </motion.button>
       </div>
 
       {/* Progress */}
-      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-8">
         <div
-          className="bg-primary h-2 rounded-full transition-all duration-300"
+          className="bg-indigo-500 h-2 rounded-full transition-all duration-300"
           style={{ width: `${((currentCardIndex + 1) / cards.length) * 100}%` }}
         />
       </div>

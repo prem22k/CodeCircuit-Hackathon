@@ -353,19 +353,38 @@ export default function DecksPage() {
             <AnimatePresence>
               {filteredAndSortedDecks.map((deck, index) => (
                 <motion.div
-                key={deck.id}
+                  key={deck.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ delay: index * 0.1 }}
-                  className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-lg transition-all duration-300 group"
+                  exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
+                  transition={{ delay: index * 0.05, duration: 0.4 }}
+                  className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col"
               >
-                  <div className="p-6">
+                  <Link href={`/decks/${deck.id}`} className="flex flex-col p-6 flex-grow group">
                     <div className="flex justify-between items-start mb-4">
-                      <h3 className="text-xl font-semibold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                      <h3 className="text-xl font-semibold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors leading-tight pr-4">
                         {deck.title}
                       </h3>
-                      <div className="flex gap-2">
+                      {/* Edit and Delete buttons moved outside the Link */}
+                    </div>
+                    <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-3 flex-grow">
+                  {deck.description || 'No description provided.'}
+                </p>
+                    <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 mt-auto">
+                      <div className="flex items-center space-x-4">
+                        <div className="flex items-center">
+                          <BookOpen className="w-4 h-4 mr-1.5" />
+                          {deck.cards?.length || 0} {deck.cards?.length === 1 ? 'card' : 'cards'}
+                        </div>
+                        <div className="flex items-center">
+                          <Clock className="w-4 h-4 mr-1.5" />
+                          Updated {new Date(deck.updatedAt).toLocaleDateString()}
+                        </div>
+                </div>
+                     
+                    </div>
+                  </Link>
+                   <div className="flex justify-end gap-1 p-4 border-t border-gray-100 dark:border-gray-700">
                         <motion.button
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
@@ -388,32 +407,6 @@ export default function DecksPage() {
                           <Trash2 className="w-4 h-4" />
                         </motion.button>
                       </div>
-                    </div>
-                    <p className="text-gray-600 dark:text-gray-400 mb-6 line-clamp-2">
-                  {deck.description}
-                </p>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-4">
-                        <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                          <BookOpen className="w-4 h-4 mr-1.5" />
-                          {deck.cards.length} cards
-                        </div>
-                        <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                          <Clock className="w-4 h-4 mr-1.5" />
-                          {new Date(deck.updatedAt).toLocaleDateString()}
-                        </div>
-                </div>
-                      <motion.div
-                        whileHover={{ x: 4 }}
-                        className="flex items-center text-sm text-indigo-600 dark:text-indigo-400 group-hover:text-indigo-700 dark:group-hover:text-indigo-300 transition-colors"
-                      >
-                        <Link href={`/decks/${deck.id}`} className="flex items-center">
-                          Study
-                          <ChevronRight className="w-4 h-4 ml-1" />
-              </Link>
-                      </motion.div>
-                    </div>
-                  </div>
                 </motion.div>
             ))}
             </AnimatePresence>
