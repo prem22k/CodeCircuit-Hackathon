@@ -122,22 +122,27 @@ export function NavBar() {
                     onClick={() => setIsProfileOpen(!isProfileOpen)}
                     className="flex items-center space-x-2 focus:outline-none group"
                   >
-                    {user?.photoURL ? (
-                      <Image
-                        src={user.photoURL}
-                        alt="Profile"
-                        width={32}
-                        height={32}
-                        className="rounded-full ring-2 ring-gray-200 dark:ring-gray-700 group-hover:ring-indigo-500/20 transition-all duration-300"
-                      />
-                    ) : (
-                      <div className="relative">
-                        <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center text-indigo-600 dark:text-indigo-400 group-hover:ring-2 group-hover:ring-indigo-500/20 transition-all duration-300">
-                          {getInitials(user?.displayName)}
+                    <div className="relative">
+                      {user.photoURL ? (
+                        <div className="relative w-8 h-8 rounded-full overflow-hidden ring-2 ring-gray-200 dark:ring-gray-700 group-hover:ring-indigo-500/20 transition-all duration-300">
+                          <Image
+                            src={user.photoURL}
+                            alt="Profile"
+                            width={32}
+                            height={32}
+                            className="object-cover"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                         </div>
-                        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300" />
-                      </div>
-                    )}
+                      ) : (
+                        <div className="relative">
+                          <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center text-indigo-600 dark:text-indigo-400 group-hover:ring-2 group-hover:ring-indigo-500/20 transition-all duration-300">
+                            {getInitials(user.displayName)}
+                          </div>
+                          <div className="absolute inset-0 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300" />
+                        </div>
+                      )}
+                    </div>
                   </motion.button>
 
                   {/* Username on Hover */}
@@ -150,7 +155,7 @@ export function NavBar() {
                         transition={{ duration: 0.2 }}
                         className="text-sm font-medium text-gray-700 dark:text-gray-300"
                       >
-                        {user?.displayName || 'User'}
+                        {user.displayName || user.email?.split('@')[0] || 'User'}
                       </motion.span>
                     )}
                   </AnimatePresence>
@@ -171,10 +176,10 @@ export function NavBar() {
                       <div className="py-1">
                         <div className="px-4 py-2 border-b border-gray-100 dark:border-gray-700">
                           <p className="text-sm font-medium text-gray-900 dark:text-white">
-                            {user?.displayName || 'User'}
+                            {user.displayName || user.email?.split('@')[0] || 'User'}
                           </p>
                           <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
-                            {user?.email}
+                            {user.email}
                           </p>
                         </div>
                         <motion.button
@@ -283,12 +288,31 @@ export function NavBar() {
               {user ? (
                 <>
                   <div className="pt-3 border-t border-gray-200 dark:border-gray-800">
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">
-                      {user.displayName || 'User'}
-                    </p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {user.email}
-                    </p>
+                    <div className="flex items-center space-x-3 mb-2">
+                      {user.photoURL ? (
+                        <div className="relative w-8 h-8 rounded-full overflow-hidden ring-2 ring-gray-200 dark:ring-gray-700">
+                          <Image
+                            src={user.photoURL}
+                            alt="Profile"
+                            width={32}
+                            height={32}
+                            className="object-cover"
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                          {getInitials(user.displayName)}
+                        </div>
+                      )}
+                      <div>
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">
+                          {user.displayName || user.email?.split('@')[0] || 'User'}
+                        </p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          {user.email}
+                        </p>
+                      </div>
+                    </div>
                   </div>
                   <Link
                     href="/profile"
