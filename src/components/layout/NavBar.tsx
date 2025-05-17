@@ -12,6 +12,7 @@ export function NavBar() {
   const { user, signOut } = useAuth();
   const router = useRouter();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isHovering, setIsHovering] = useState(false);
 
   // Add click outside handler for profile dropdown
   useEffect(() => {
@@ -38,6 +39,15 @@ export function NavBar() {
     }
   };
 
+  // Helper function to get initials
+  const getInitials = (name?: string | null): string => {
+    if (!name) return '';
+    const nameParts = name.split(' ');
+    if (nameParts.length === 1) {
+      return nameParts[0].charAt(0).toUpperCase();
+    }
+    return nameParts[0].charAt(0).toUpperCase() + nameParts[nameParts.length - 1].charAt(0).toUpperCase();
+  };
 
   return (
     <nav className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm">
@@ -56,7 +66,7 @@ export function NavBar() {
             </span>
           </Link>
 
-          {/* Navigation Links (only show when logged in, if needed in nav) */}
+          {/* Navigation Links and Profile (only show when logged in) */}
           {user ? (
             <div className="flex items-center space-x-6">
               <Link
@@ -72,12 +82,16 @@ export function NavBar() {
                 Review
               </Link>
 
-              {/* Profile Dropdown */}
-              <div className="relative profile-dropdown-container">
-                <motion.button
+              {/* Profile Hover/Click Area */}
+              <div 
+                className="relative profile-dropdown-container flex items-center space-x-2 cursor-pointer"
+                onMouseEnter={() => setIsHovering(true)}
+                onMouseLeave={() => setIsHovering(false)}
+                onClick={() => setIsProfileOpen(!isProfileOpen)}
+              >
+                <motion.div
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  onClick={() => setIsProfileOpen(!isProfileOpen)}
                   className="flex items-center space-x-2 focus:outline-none profile-button"
                 >
                   {user?.photoURL ? (
@@ -89,12 +103,28 @@ export function NavBar() {
                       className="rounded-full ring-2 ring-gray-200 dark:ring-gray-700"
                     />
                   ) : (
-                    <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center ring-2 ring-gray-200 dark:ring-gray-700">
-                      <User className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                    <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center ring-2 ring-gray-200 dark:ring-gray-700 text-sm font-medium text-gray-700 dark:text-gray-300">
+                      {getInitials(user?.displayName)}
                     </div>
                   )}
-                </motion.button>
+                </motion.div>
 
+                {/* Username on Hover */}
+                <AnimatePresence>
+                  {isHovering && !isProfileOpen && (
+                    <motion.span
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -10 }}
+                      transition={{ duration: 0.2 }}
+                      className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                    >
+                      {user?.displayName || 'User'}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+
+                {/* Full Profile Dropdown on Click */}
                 <AnimatePresence>
                   {isProfileOpen && (
                     <motion.div
@@ -102,7 +132,7 @@ export function NavBar() {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
                       transition={{ type: "spring", duration: 0.3 }}
-                      className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 py-2 z-50 origin-top-right"
+                      className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 py-2 z-50 origin-top-right"
                     >
                       <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
                         <p className="text-sm font-medium text-gray-900 dark:text-white">{user?.displayName || 'User'}</p>
