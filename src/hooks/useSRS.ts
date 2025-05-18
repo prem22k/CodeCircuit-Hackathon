@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { CardReview, ReviewResult, createInitialReview, processReview, getCardsDueToday } from '@/utils/srs';
 import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/firebase';
-import { doc, collection, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { doc, collection, getDoc, setDoc, updateDoc, addDoc } from 'firebase/firestore';
 
 export function useSRS(deckId: string) {
   const { user } = useAuth();
@@ -19,7 +19,7 @@ export function useSRS(deckId: string) {
         setLoading(true);
         const reviewsRef = doc(db, 'users', user.id, 'decks', deckId, 'srs', 'reviews');
         const reviewsDoc = await getDoc(reviewsRef);
-        
+
         if (reviewsDoc.exists()) {
           setReviews(reviewsDoc.data() as Record<string, CardReview>);
         } else {
@@ -65,15 +65,31 @@ export function useSRS(deckId: string) {
 
     const currentReview = reviews[cardId] || createInitialReview(cardId);
     const result = processReview(currentReview, performance);
-    
+
     const newReview: CardReview = {
       ...currentReview,
       ...result,
       lastReview: new Date()
     };
 
+    // Save the updated SRS state for the card
     const newReviews = { ...reviews, [cardId]: newReview };
     await saveReviews(newReviews);
+
+    // Also save a review history record
+    try {
+      const historyRef = collection(db, 'users', user.id, 'decks', deckId, 'history');
+      await addDoc(historyRef, {
+        cardId: cardId,
+        performance: performance,
+        timestamp: new Date(),
+        deckId: deckId, // Include deckId for easier querying if needed
+        userId: user.id // Include userId for easier querying/security rule application
+      });
+    } catch (err) {
+      console.error('Error saving review history:', err);
+      // Optionally set an error state or show a toast
+    }
   };
 
   // Get cards due for review
