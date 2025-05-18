@@ -190,6 +190,8 @@ export default function DeckDetailPage() {
     );
   }
 
+  console.log("Rendering deck detail page with sortedCards:", sortedCards);
+
   return (
     <div className="space-y-8 min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-6 lg:p-8">
       {/* Rest of the component remains the same */}
