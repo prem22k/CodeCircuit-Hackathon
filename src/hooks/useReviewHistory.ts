@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/firebase';
-import { 
-  collection, 
-  query, 
-  where, 
-  getDocs, 
-  orderBy, 
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  orderBy,
   limit,
-  Timestamp 
+  Timestamp
 } from 'firebase/firestore';
 
 export interface ReviewRecord {
@@ -25,7 +25,7 @@ export interface DailyStats {
   averagePerformance: number;
 }
 
-export function useReviewHistory(deckId: string, limitCount: number = 50) {
+export function useReviewHistory(deckId: string = '<a-known-deck-id>', limitCount: number = 365) {
   const { user } = useAuth();
   const [records, setRecords] = useState<ReviewRecord[]>([]);
   const [dailyStats, setDailyStats] = useState<DailyStats[]>([]);
@@ -60,7 +60,7 @@ export function useReviewHistory(deckId: string, limitCount: number = 50) {
         })) as ReviewRecord[];
 
         setRecords(historyData);
-        
+
         // Calculate daily stats
         const stats = calculateDailyStats(historyData);
         setDailyStats(stats);
@@ -89,7 +89,7 @@ function calculateDailyStats(reviews: ReviewRecord[]): DailyStats[] {
   reviews.forEach(review => {
     const date = review.timestamp.toISOString().split('T')[0];
     const current = statsMap.get(date) || { count: 0, totalPerformance: 0 };
-    
+
     statsMap.set(date, {
       count: current.count + 1,
       totalPerformance: current.totalPerformance + review.performance

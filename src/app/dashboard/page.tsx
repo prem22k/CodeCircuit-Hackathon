@@ -157,8 +157,16 @@ export default function DashboardPage() {
         value: stat.reviews
       }));
       setHeatmapData(data);
+    } else {
+      // If no daily stats, set heatmap data to an empty array
+      setHeatmapData([]);
     }
   }, [dailyStats]);
+
+  // Calculate the date range for the heatmap (last 90 days)
+  const today = new Date();
+  const ninetyDaysAgo = new Date();
+  ninetyDaysAgo.setDate(today.getDate() - 90);
 
   // Add click outside handler for profile dropdown
   useEffect(() => {
@@ -575,92 +583,130 @@ export default function DashboardPage() {
         </div>
 
         {/* Performance Chart */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-          className="mt-8 bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm"
-        >
-          <h2 className="text-xl font-bold bg-gradient-to-r from-black to-gray-600 dark:from-white dark:to-gray-400 bg-clip-text text-transparent mb-6">
-            Performance Overview
-          </h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Pie Chart */}
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={performanceData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    paddingAngle={5}
-                    dataKey="value"
-                    animationDuration={1000}
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                  >
-                    {performanceData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: 'white',
-                      border: '1px solid #e5e7eb',
-                      borderRadius: '0.5rem',
-                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-                    }}
-                    formatter={(value: number) => [`${value} cards`, '']}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
+        {stats.totalCards > 0 ? (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+            className="mt-8 bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm"
+          >
+            <h2 className="text-xl font-bold bg-gradient-to-r from-black to-gray-600 dark:from-white dark:to-gray-400 bg-clip-text text-transparent mb-6">
+              Performance Overview
+            </h2>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Pie Chart */}
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={performanceData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={90}
+                      fill="#8884d8"
+                      paddingAngle={3}
+                      dataKey="value"
+                      animationDuration={1000}
+                      labelLine={false}
+                      label={({ name, percent, cx, cy, midAngle, outerRadius, index }) => {
+                        const RADIAN = Math.PI / 180;
+                        const radius = outerRadius + 20;
+                        const x = cx + radius * Math.cos(-midAngle * RADIAN);
+                        const y = cy + radius * Math.sin(-midAngle * RADIAN);
 
-            {/* Line Chart */}
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={dailyStats}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                  <XAxis
-                    dataKey="date"
-                    tickFormatter={(date) => new Date(date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-                    stroke="#6b7280"
-                  />
-                  <YAxis stroke="#6b7280" />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: 'white',
-                      border: '1px solid #e5e7eb',
-                      borderRadius: '0.5rem',
-                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-                    }}
-                    labelFormatter={(date) => new Date(date).toLocaleDateString()}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="reviews"
-                    stroke="#3b82f6"
-                    strokeWidth={2}
-                    dot={{ fill: '#3b82f6', strokeWidth: 2 }}
-                    activeDot={{ r: 6, fill: '#3b82f6' }}
-                    name="Reviews"
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="averagePerformance"
-                    stroke="#10b981"
-                    strokeWidth={2}
-                    dot={{ fill: '#10b981', strokeWidth: 2 }}
-                    activeDot={{ r: 6, fill: '#10b981' }}
-                    name="Success Rate"
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+                        return (
+                          <text
+                            x={x}
+                            y={y}
+                            fill={COLORS[index % COLORS.length]}
+                            textAnchor={x > cx ? 'start' : 'end'}
+                            dominantBaseline="central"
+                            className="text-sm font-medium"
+                          >
+                            {`${name} ${(percent * 100).toFixed(0)}%`}
+                          </text>
+                        );
+                      }}
+                    >
+                      {performanceData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'white',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '0.5rem',
+                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                      }}
+                      formatter={(value: number) => [`${value} cards`, '']}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+
+              {/* Line Chart */}
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={dailyStats}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                    <XAxis
+                      dataKey="date"
+                      tickFormatter={(date) => new Date(date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                      stroke="#6b7280"
+                    />
+                    <YAxis stroke="#6b7280" />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'white',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '0.5rem',
+                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                      }}
+                      labelFormatter={(date) => new Date(date).toLocaleDateString()}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="reviews"
+                      stroke="#3b82f6"
+                      strokeWidth={2}
+                      dot={{ fill: '#3b82f6', strokeWidth: 2 }}
+                      activeDot={{ r: 6, fill: '#3b82f6' }}
+                      name="Reviews"
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="averagePerformance"
+                      stroke="#10b981"
+                      strokeWidth={2}
+                      dot={{ fill: '#10b981', strokeWidth: 2 }}
+                      activeDot={{ r: 6, fill: '#10b981' }}
+                      name="Success Rate"
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
             </div>
-          </div>
-        </motion.div>
+          </motion.div>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+            className="mt-8 bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm text-center"
+          >
+            <div className="w-24 h-24 mx-auto mb-4 relative">
+              <Image
+                src="/studying.svg"
+                alt="No data"
+                fill
+                className="object-contain opacity-50"
+              />
+            </div>
+            <p className="text-gray-500 dark:text-gray-400">Create cards in your decks to see performance data.</p>
+          </motion.div>
+        )}
 
         {/* Success Rate Analysis */}
         <motion.div
@@ -758,7 +804,7 @@ export default function DashboardPage() {
                       className={`w-4 h-4 rounded-md transition-all duration-200 ${intensity === 0
                         ? 'bg-gray-100 dark:bg-gray-800'
                         : intensity === 1
-                          ? 'bg-blue-100 dark:bg-blue-900'
+                          ? 'bg-blue-100 dark:bg-blue-900' // Using blue for the legend as per previous change
                           : intensity === 2
                             ? 'bg-blue-200 dark:bg-blue-800'
                             : intensity === 3
@@ -781,8 +827,8 @@ export default function DashboardPage() {
               <div className="min-w-[800px]">
                 <CalendarHeatmap
                   data={heatmapData}
-                  startDate={new Date(new Date().setDate(new Date().getDate() - 90))}
-                  endDate={new Date()}
+                  startDate={ninetyDaysAgo}
+                  endDate={today}
                 />
               </div>
             </div>
