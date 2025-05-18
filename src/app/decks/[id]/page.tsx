@@ -360,7 +360,6 @@ export default function DeckDetailPage() {
         layout
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
       >
-        <AnimatePresence>
           {sortedCards.map((card: any) => (
             <motion.div
               key={card.id}
@@ -416,7 +415,6 @@ export default function DeckDetailPage() {
               </div>
             </motion.div>
           ))}
-        </AnimatePresence>
 
         {/* Add New Card Card */}
         <motion.div
