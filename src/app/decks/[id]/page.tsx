@@ -69,6 +69,9 @@ export default function DeckDetailPage() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [cardToDelete, setCardToDelete] = useState<any>(null);
 
+  // Temporary debug flag
+  const [debugDisableCardRender, setDebugDisableCardRender] = useState(false);
+
   useEffect(() => {
     // Added console logs for debugging
     console.log("Effect running, user:", user?.id);
@@ -167,6 +170,17 @@ export default function DeckDetailPage() {
     }
   });
 
+  // Temporary effect to inspect sortedCards when it changes
+  useEffect(() => {
+    console.log("sortedCards state updated:", sortedCards);
+    if (sortedCards && sortedCards.length > 0) {
+      console.log("Details of first card in sortedCards:", sortedCards[0]);
+      // You can add more detailed checks here if needed
+      // e.g., console.log("Type of first card ID:", typeof sortedCards[0].id);
+      // console.log("Value of first card ID:", sortedCards[0].id);
+    }
+  }, [sortedCards]); // Dependency array includes sortedCards
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -217,7 +231,8 @@ export default function DeckDetailPage() {
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => router.push(`/decks/${deckId}/cards/new`)}
+            // Temporarily disable onClick to debug
+            // onClick={() => router.push(`/decks/${deckId}/cards/new`)}
             className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 flex items-center space-x-2"
           >
             <Plus className="w-5 h-5" />
@@ -226,7 +241,8 @@ export default function DeckDetailPage() {
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => router.push(`/decks/${deckId}/study`)}
+            // Temporarily disable onClick to debug
+            // onClick={() => router.push(`/decks/${deckId}/study`)}
             className="px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 flex items-center space-x-2"
           >
             <Brain className="w-5 h-5" />
@@ -399,17 +415,27 @@ export default function DeckDetailPage() {
       </div>
 
       {/* Cards Grid */}
-      <motion.div
-        layout
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-      >
-        <AnimatePresence>
+      {/* Use debug flag to conditionally render the grid */}
+      {!debugDisableCardRender && (
+        <motion.div
+          layout
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+        >
+          {/* Temporarily comment out AnimatePresence */}
+          {/* <AnimatePresence> */}
           {sortedCards.map((card: any) => {
+            // Add a check and log for card.id
             if (!card || !card.id) {
               console.error("Skipping rendering for card with missing or invalid ID:", card);
-              return null;
+              return null; // Skip rendering this card
             }
             console.log("Attempting to render card with ID:", card.id);
+
+            // Add a check for the key prop
+            if (!card.id || typeof card.id !== 'string') {
+              console.warn("Invalid or missing string ID for card key:", card);
+            }
+
             return (
               <motion.div
                 key={card.id}
@@ -421,28 +447,19 @@ export default function DeckDetailPage() {
                 // whileHover={{ y: -5, boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)" }}
                 className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700 flex flex-col"
               >
-                {/* Temporarily disable Link to debug unexpected navigation */}
-                {/* <Link href={`/decks/${deckId}/cards/${card.id}/edit`} className="flex-1 p-6 block"> */}
-                <div className="flex justify-between items-start mb-4">
+                {/* Temporarily simplified card content for debugging */}
+                <div className="flex-1 p-6 block">
                   <h3 className="text-xl font-semibold text-gray-900 dark:text-white leading-tight pr-4">
                     {card.front}
                   </h3>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm line-clamp-3 flex-grow mb-4">
+                    {card.back}
+                  </p>
                 </div>
-                <p className="text-gray-600 dark:text-gray-400 text-sm line-clamp-3 flex-grow mb-4">
-                  {card.back}
-                </p>
-                <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
-                  <div className="flex items-center gap-1">
-                    <Target className="w-4 h-4" />
-                    <span>Difficulty: {card.difficulty || 0}/5</span>
-                  </div>
-                  {card.lastReviewed && (
-                    <div className="flex items-center gap-1">
-                      <Clock className="w-4 h-4" />
-                      <span>Last reviewed: {new Date(card.lastReviewed.seconds * 1000).toLocaleDateString()}</span>
-                    </div>
-                  )}
-                </div>
+                {/* End simplified card content */}
+
+                {/* Temporarily disable action buttons */}
+                {/*
                 <div className="flex justify-end gap-1 p-4 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-100 dark:border-gray-700">
                   <motion.button
                     whileHover={{ scale: 1.1 }}
@@ -469,86 +486,92 @@ export default function DeckDetailPage() {
                     <Trash2 className="w-5 h-5" />
                   </motion.button>
                 </div>
+                */}
               </motion.div>
             );
           })}
-        </AnimatePresence>
+          {/* </AnimatePresence> */}
 
-        {/* Add New Card Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
-          transition={{ duration: 0.4, delay: filteredCards.length * 0.05 }}
-          className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:shadow-xl transition-shadow group"
-          onClick={() => router.push(`/decks/${deckId}/cards/new`)}
-        >
+          {/* Add New Card Card */}
           <motion.div
-            whileHover={{ scale: 1.05, rotate: 90 }}
-            whileTap={{ scale: 0.95 }}
-            className="p-4 bg-indigo-100 dark:bg-indigo-900/30 rounded-full mb-4"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
+            transition={{ duration: 0.4, delay: filteredCards.length * 0.05 }}
+            className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:shadow-xl transition-shadow group"
+            onClick={() => router.push(`/decks/${deckId}/cards/new`)}
           >
-            <Plus className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
+            <motion.div
+              whileHover={{ scale: 1.05, rotate: 90 }}
+              whileTap={{ scale: 0.95 }}
+              className="p-4 bg-indigo-100 dark:bg-indigo-900/30 rounded-full mb-4"
+            >
+              <Plus className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
+            </motion.div>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Add New Card</h3>
+            <p className="text-gray-600 dark:text-gray-400 text-sm">
+              Create a new flashcard for this deck
+            </p>
           </motion.div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Add New Card</h3>
-          <p className="text-gray-600 dark:text-gray-400 text-sm">
-            Create a new flashcard for this deck
-          </p>
         </motion.div>
-      </motion.div>
+      )}
 
       {/* Empty State */}
-      {sortedCards.length === 0 && !searchQuery && filterBy === 'all' && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="text-center py-12 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 mt-8"
-        >
-          <div className="w-32 h-32 mx-auto mb-6 relative opacity-70">
-            <Image
-              src={theme === 'dark' ? '/dark.png' : '/light.png'}
-              alt="No cards"
-              fill
-              className="object-contain"
-            />
-          </div>
-          <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">No cards yet</h3>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
-            Add your first card to this deck to start studying.
-          </p>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => router.push(`/decks/${deckId}/cards/new`)}
-            className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 flex items-center space-x-2 mx-auto"
+      {
+        sortedCards.length === 0 && !searchQuery && filterBy === 'all' && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-center py-12 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 mt-8"
           >
-            <Plus className="w-5 h-5" />
-            <span>Add Your First Card</span>
-          </motion.button>
-        </motion.div>
-      )}
+            <div className="w-32 h-32 mx-auto mb-6 relative opacity-70">
+              <Image
+                src={theme === 'dark' ? '/dark.png' : '/light.png'}
+                alt="No cards"
+                fill
+                className="object-contain"
+              />
+            </div>
+            <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">No cards yet</h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
+              Add your first card to this deck to start studying.
+            </p>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => router.push(`/decks/${deckId}/cards/new`)}
+              className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 flex items-center space-x-2 mx-auto"
+            >
+              <Plus className="w-5 h-5" />
+              <span>Add Your First Card</span>
+            </motion.button>
+          </motion.div>
+        )
+      }
 
       {/* Empty State - Search/Filter */}
-      {sortedCards.length === 0 && (searchQuery || filterBy !== 'all') && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="text-center py-12 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 mt-8"
-        >
-          <div className="w-32 h-32 mx-auto mb-6 relative opacity-70">
-            <Image
-              src={theme === 'dark' ? '/dark.png' : '/light.png'}
-              alt="No cards found"
-              fill
-              className="object-contain"
-            />
-          </div>
-          <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">No matching cards found</h3>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
-            Try adjusting your search or filters.
-          </p>
-        </motion.div>
-      )}
+      {
+        sortedCards.length === 0 && (searchQuery || filterBy !== 'all') && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-center py-12 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 mt-8"
+          >
+            <div className="w-32 h-32 mx-auto mb-6 relative opacity-70">
+              <Image
+                src={theme === 'dark' ? '/dark.png' : '/light.png'}
+                alt="No cards found"
+                fill
+                className="object-contain"
+              />
+            </div>
+            <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">No matching cards found</h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
+              Try adjusting your search or filters.
+            </p>
+          </motion.div>
+        )
+      }
 
       {/* Delete Deck Modal */}
       <DeleteDeckDialog
