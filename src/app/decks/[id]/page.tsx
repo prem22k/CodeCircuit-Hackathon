@@ -51,24 +51,29 @@ export default function DeckDetailPage() {
   const [cardToDelete, setCardToDelete] = useState<any>(null);
 
   useEffect(() => {
+    console.log("useEffect triggered", { user, deckId });
     if (!user) {
+      console.log("User not found, redirecting to login.");
       router.push('/login');
       return;
     }
 
     // Ensure deckId is a string before fetching
     if (typeof deckId !== 'string') {
+      console.error('Invalid deck ID.', deckId);
       setLoading(false);
       toast.error('Invalid deck ID.');
       router.push('/decks'); // Redirect to decks list
       return;
     }
 
+    console.log(`Attempting to subscribe to deck and cards for user ${user.id}, deck ${deckId}`);
     const deckRef = doc(db, `users/${user.id}/decks/${deckId}`);
     const cardsRef = collection(db, `users/${user.id}/decks/${deckId}/cards`);
 
     // Subscribe to deck changes
     const unsubscribeDeck = onSnapshot(deckRef, (doc) => {
+      console.log("Deck snapshot received:", doc.exists() ? doc.data() : "Deck does not exist");
       if (doc.exists()) {
         setDeck({ id: doc.id, ...doc.data() });
       } else {
@@ -86,6 +91,7 @@ export default function DeckDetailPage() {
         id: doc.id,
         ...doc.data()
       }));
+      console.log("Cards snapshot received:", cardsData.length, "cards");
       setCards(cardsData);
       setLoading(false);
     }, (error) => {

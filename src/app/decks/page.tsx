@@ -47,6 +47,8 @@ export default function DecksPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedDeck, setSelectedDeck] = useState<Deck | null>(null);
+  const [newDeckTitle, setNewDeckTitle] = useState('');
+  const [newDeckDescription, setNewDeckDescription] = useState('');
   const [showTutorial, setShowTutorial] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('newest');
