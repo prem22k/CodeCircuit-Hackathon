@@ -318,12 +318,11 @@ export default function DeckDetailPage() {
               transition={{ duration: 0.4 }}
               className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 flex flex-col"
             >
-               <Link href={`/decks/${deckId}/cards/${card.id}/edit`} className="flex flex-col flex-grow group">
-                <div className="flex justify-between items-start mb-3">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white leading-tight pr-4">
+               <div className="flex-1 p-6 block">
+                <div className="flex justify-between items-start mb-4">
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white leading-tight pr-4">
                     {card.front}
                   </h3>
-                   {/* Edit and Delete buttons moved outside the Link */}
                 </div>
                 <p className="text-gray-600 dark:text-gray-400 text-sm line-clamp-3 flex-grow mb-4">
                   {card.back}
@@ -333,7 +332,7 @@ export default function DeckDetailPage() {
                   <span>Difficulty: {card.difficulty || 0}/5</span>
                    <span>Last reviewed: {card.lastReviewed ? new Date(card.lastReviewed.seconds * 1000).toLocaleDateString() : 'Never'}</span>
                  </div>
-              </Link>
+               </div>
               <div className="flex justify-end gap-1 pt-4 border-t border-gray-100 dark:border-gray-700 mt-4">
                  <motion.button
                     whileHover={{ scale: 1.1 }}
