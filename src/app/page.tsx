@@ -150,7 +150,7 @@ export default function HomePage() {
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   transition={{ type: "spring", stiffness: 300 }}
-                  className="relative z-10"
+                  className="relative z-10 w-full h-full"
                 >
                   <Image
                     src={theme === 'dark' ? '/dark.png' : '/light.png'}
