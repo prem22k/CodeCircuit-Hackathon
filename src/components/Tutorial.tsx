@@ -47,17 +47,17 @@ export default function Tutorial({ onComplete }: TutorialProps) {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4 relative">
+      <div className="bg-background rounded-lg p-6 max-w-md w-full mx-4 relative shadow-lg">
         <button
           onClick={handleSkip}
-          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+          className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors"
         >
           <X className="w-5 h-5" />
         </button>
 
         <div className="space-y-4">
-          <h3 className="text-xl font-semibold">{steps[currentStep].title}</h3>
-          <p className="text-gray-600 dark:text-gray-400">
+          <h3 className="text-xl font-semibold text-foreground">{steps[currentStep].title}</h3>
+          <p className="text-muted-foreground">
             {steps[currentStep].description}
           </p>
 
@@ -66,11 +66,10 @@ export default function Tutorial({ onComplete }: TutorialProps) {
               {steps.map((_, index) => (
                 <div
                   key={index}
-                  className={`w-2 h-2 rounded-full ${
-                    index === currentStep
-                      ? 'bg-primary-500'
-                      : 'bg-gray-300 dark:bg-gray-600'
-                  }`}
+                  className={`w-2 h-2 rounded-full ${index === currentStep
+                    ? 'bg-primary'
+                    : 'bg-muted'
+                    }`}
                 />
               ))}
             </div>

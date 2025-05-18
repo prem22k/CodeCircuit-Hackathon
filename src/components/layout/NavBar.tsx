@@ -51,13 +51,13 @@ export function NavBar() {
   };
 
   const profileVariants = {
-    hidden: { 
+    hidden: {
       opacity: 0,
       scale: 0.95,
       y: -10,
       boxShadow: '0 0 0 0 rgba(99, 102, 241, 0)'
     },
-    visible: { 
+    visible: {
       opacity: 1,
       scale: 1,
       y: 0,
@@ -67,7 +67,7 @@ export function NavBar() {
         ease: 'easeOut'
       }
     },
-    exit: { 
+    exit: {
       opacity: 0,
       scale: 0.95,
       y: -10,
@@ -111,7 +111,7 @@ export function NavBar() {
             >
               Review
             </Link>
-            
+
             {/* Theme Switch Button */}
             <motion.button
               whileHover={{ scale: 1.05 }}
@@ -129,15 +129,13 @@ export function NavBar() {
 
             {user ? (
               <div className="relative" ref={profileRef}>
-                <div 
+                <div
                   className="flex items-center space-x-2 cursor-pointer"
-                  onMouseEnter={() => setIsHovering(true)}
-                  onMouseLeave={() => setIsHovering(false)}
+                  onClick={() => setIsProfileOpen(!isProfileOpen)}
                 >
-                  <motion.button
+                  <motion.div
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    onClick={() => setIsProfileOpen(!isProfileOpen)}
                     className="flex items-center space-x-2 focus:outline-none group"
                   >
                     <div className="relative">
@@ -161,22 +159,12 @@ export function NavBar() {
                         </div>
                       )}
                     </div>
-                  </motion.button>
+                  </motion.div>
 
-                  {/* Username on Hover */}
-                  <AnimatePresence>
-                    {isHovering && !isProfileOpen && (
-                      <motion.span
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -10 }}
-                        transition={{ duration: 0.2 }}
-                        className="text-sm font-medium text-gray-700 dark:text-gray-300"
-                      >
-                        {user.displayName || user.email?.split('@')[0] || 'User'}
-                      </motion.span>
-                    )}
-                  </AnimatePresence>
+                  {/* Username always visible */}
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    {user.displayName || user.email?.split('@')[0] || 'User'}
+                  </span>
 
                   <ChevronDown className={`w-4 h-4 text-gray-600 dark:text-gray-300 transition-colors ${isProfileOpen ? 'rotate-180' : ''}`} />
                 </div>
@@ -288,7 +276,7 @@ export function NavBar() {
                 <Moon className="w-5 h-5" />
               )}
             </motion.button>
-            
+
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"

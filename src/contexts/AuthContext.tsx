@@ -20,10 +20,10 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
-  signInWithEmail: async () => {},
-  signUpWithEmail: async () => {},
-  signInWithGoogle: async () => {},
-  signOut: async () => {},
+  signInWithEmail: async () => { },
+  signUpWithEmail: async () => { },
+  signInWithGoogle: async () => { },
+  signOut: async () => { },
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -66,6 +66,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (displayName) {
         await updateProfile(userCredential.user, { displayName });
       }
+      // Clear the hasSeenTutorial flag for new users
+      localStorage.removeItem('hasSeenTutorial');
       toast.success('Account created successfully!');
       router.push('/decks');
     } catch (error: any) {
@@ -76,7 +78,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInWithGoogle = useCallback(async () => {
     try {
-      await signInWithPopup(auth, googleProvider);
+      const result = await signInWithPopup(auth, googleProvider);
+      // Check if this is a new user
+      const isNewUser = result.additionalUserInfo?.isNewUser;
+      if (isNewUser) {
+        localStorage.removeItem('hasSeenTutorial');
+      }
       toast.success('Successfully signed in with Google!');
       router.push('/decks');
     } catch (error: any) {
@@ -97,13 +104,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [router]);
 
   return (
-    <AuthContext.Provider value={{ 
-      user, 
-      loading, 
-      signInWithEmail, 
-      signUpWithEmail, 
-      signInWithGoogle, 
-      signOut: handleSignOut 
+    <AuthContext.Provider value={{
+      user,
+      loading,
+      signInWithEmail,
+      signUpWithEmail,
+      signInWithGoogle,
+      signOut: handleSignOut
     }}>
       {children}
     </AuthContext.Provider>
