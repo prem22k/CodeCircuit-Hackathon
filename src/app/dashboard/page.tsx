@@ -250,136 +250,7 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex justify-between items-center mb-8 bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700"
-        >
-          <div className="flex items-center space-x-3">
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Brain className="w-8 h-8 text-black dark:text-white" />
-            </motion.div>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-black to-gray-600 dark:from-white dark:to-gray-400 bg-clip-text text-transparent">
-              BrainBoost
-            </h1>
-          </div>
-          <div className="flex items-center space-x-6">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => router.push('/decks')}
-              className="text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white transition-colors flex items-center space-x-2"
-            >
-              <Bookmark className="w-5 h-5" />
-              <span>My Decks</span>
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => router.push('/review')}
-              className="text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white transition-colors flex items-center space-x-2"
-            >
-              <Target className="w-5 h-5" />
-              <span>Review</span>
-            </motion.button>
-
-            {/* Profile Dropdown */}
-            <div className="relative profile-dropdown">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setIsProfileOpen(!isProfileOpen)}
-                className="flex items-center space-x-2 focus:outline-none"
-              >
-                {user?.photoURL ? (
-                  <Image
-                    src={user.photoURL}
-                    alt="Profile"
-                    width={32}
-                    height={32}
-                    className="rounded-full ring-2 ring-gray-200 dark:ring-gray-700"
-                  />
-                ) : (
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 flex items-center justify-center ring-2 ring-gray-200 dark:ring-gray-700">
-                    <User className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-                  </div>
-                )}
-              </motion.button>
-
-              <AnimatePresence>
-                {isProfileOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    transition={{ type: "spring", duration: 0.3 }}
-                    className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 py-2 z-50"
-                  >
-                    <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">{user?.displayName || 'User'}</p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{user?.email}</p>
-                    </div>
-
-                    <div className="py-1">
-                      <motion.button
-                        whileHover={{ x: 4 }}
-                        onClick={() => {
-                          router.push('/profile');
-                          setIsProfileOpen(false);
-                        }}
-                        className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center space-x-2"
-                      >
-                        <User className="w-4 h-4" />
-                        <span>View Profile</span>
-                      </motion.button>
-
-                      <motion.button
-                        whileHover={{ x: 4 }}
-                        onClick={() => {
-                          router.push('/profile/edit');
-                          setIsProfileOpen(false);
-                        }}
-                        className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center space-x-2"
-                      >
-                        <Edit className="w-4 h-4" />
-                        <span>Edit Profile</span>
-                      </motion.button>
-
-                      <motion.button
-                        whileHover={{ x: 4 }}
-                        onClick={() => {
-                          router.push('/settings');
-                          setIsProfileOpen(false);
-                        }}
-                        className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center space-x-2"
-                      >
-                        <Settings className="w-4 h-4" />
-                        <span>Settings</span>
-                      </motion.button>
-                    </div>
-
-                    <div className="border-t border-gray-100 dark:border-gray-700 my-1" />
-
-                    <motion.button
-                      whileHover={{ x: 4 }}
-                      onClick={() => {
-                        router.push('/login');
-                        setIsProfileOpen(false);
-                      }}
-                      className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center space-x-2"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      <span>Sign Out</span>
-                    </motion.button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </div>
-        </motion.div>
+        {/* Removed Header as requested */}
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -533,13 +404,8 @@ export default function DashboardPage() {
                 animate={{ opacity: 1, scale: 1 }}
                 className="text-center py-12"
               >
-                <div className="w-24 h-24 mx-auto mb-4 relative">
-                  <Image
-                    src="/studying.svg"
-                    alt="No activity"
-                    fill
-                    className="object-contain opacity-50"
-                  />
+                <div className="w-24 h-24 mx-auto mb-4 relative flex items-center justify-center">
+                  <Activity className="w-16 h-16 text-gray-400 dark:text-gray-600" />
                 </div>
                 <p className="text-gray-500 dark:text-gray-400 mb-4">No recent activity</p>
                 <motion.button
@@ -609,13 +475,8 @@ export default function DashboardPage() {
                 animate={{ opacity: 1, scale: 1 }}
                 className="text-center py-12"
               >
-                <div className="w-24 h-24 mx-auto mb-4 relative">
-                  <Image
-                    src="/studying.svg"
-                    alt="No decks"
-                    fill
-                    className="object-contain opacity-50"
-                  />
+                <div className="w-24 h-24 mx-auto mb-4 relative flex items-center justify-center">
+                  <BookOpen className="w-16 h-16 text-gray-400 dark:text-gray-600" />
                 </div>
                 <p className="text-gray-500 dark:text-gray-400 mb-4">No decks yet</p>
                 <motion.button
@@ -746,13 +607,8 @@ export default function DashboardPage() {
             transition={{ delay: 0.6 }}
             className="mt-8 bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm text-center"
           >
-            <div className="w-24 h-24 mx-auto mb-4 relative">
-              <Image
-                src="/dark.png"
-                alt="No data"
-                fill
-                className="object-contain opacity-50"
-              />
+            <div className="w-24 h-24 mx-auto mb-4 relative flex items-center justify-center">
+              <BarChart className="w-16 h-16 text-gray-400 dark:text-gray-600" />
             </div>
             <p className="text-gray-500 dark:text-gray-400">Create cards in your decks to see performance data.</p>
           </motion.div>
