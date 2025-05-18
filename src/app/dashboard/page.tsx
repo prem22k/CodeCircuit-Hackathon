@@ -756,14 +756,14 @@ export default function DashboardPage() {
                     <div
                       key={intensity}
                       className={`w-4 h-4 rounded-md transition-all duration-200 ${intensity === 0
-                          ? 'bg-gray-100 dark:bg-gray-800'
-                          : intensity === 1
-                            ? 'bg-blue-100 dark:bg-blue-900'
-                            : intensity === 2
-                              ? 'bg-blue-200 dark:bg-blue-800'
-                              : intensity === 3
-                                ? 'bg-blue-300 dark:bg-blue-700'
-                                : 'bg-blue-400 dark:bg-blue-600'
+                        ? 'bg-gray-100 dark:bg-gray-800'
+                        : intensity === 1
+                          ? 'bg-blue-100 dark:bg-blue-900'
+                          : intensity === 2
+                            ? 'bg-blue-200 dark:bg-blue-800'
+                            : intensity === 3
+                              ? 'bg-blue-300 dark:bg-blue-700'
+                              : 'bg-blue-400 dark:bg-blue-600'
                         }`}
                     />
                   ))}
