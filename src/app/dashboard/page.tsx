@@ -62,15 +62,23 @@ interface Deck {
 
 const COLORS = ['#10B981', '#3B82F6', '#6B7280'];
 
-// Add missing getColor function for the calendar heatmap
+// Update the getColor function for better color intensity
 function getColor(intensity: number): string {
   const colors = [
     'bg-gray-100 dark:bg-gray-800',
-    'bg-gray-200 dark:bg-gray-700',
-    'bg-gray-300 dark:bg-gray-600',
-    'bg-gray-400 dark:bg-gray-500'
+    'bg-blue-100 dark:bg-blue-900',
+    'bg-blue-200 dark:bg-blue-800',
+    'bg-blue-300 dark:bg-blue-700',
+    'bg-blue-400 dark:bg-blue-600'
   ];
   return colors[intensity] || colors[0];
+}
+
+// Add function to calculate heatmap intensity
+function calculateIntensity(value: number, maxValue: number): number {
+  if (value === 0) return 0;
+  if (value >= maxValue) return 4;
+  return Math.ceil((value / maxValue) * 4);
 }
 
 // Add missing getReviewProgress function
@@ -111,6 +119,10 @@ export default function DashboardPage() {
   const [lastReviewDate, setLastReviewDate] = useState<Date | null>(null);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
+  // Add state for heatmap data
+  const [heatmapData, setHeatmapData] = useState<Array<{ date: string; value: number }>>([]);
+  const [maxReviews, setMaxReviews] = useState(0);
+
   useEffect(() => {
     if (!authLoading && !user) {
       router.push('/login');
@@ -136,6 +148,17 @@ export default function DashboardPage() {
       });
     }
   }, [decks, streak]);
+
+  // Update heatmap data when dailyStats changes
+  useEffect(() => {
+    if (dailyStats.length > 0) {
+      const data = dailyStats.map(stat => ({
+        date: new Date(stat.date).toISOString(),
+        value: stat.reviews
+      }));
+      setHeatmapData(data);
+    }
+  }, [dailyStats]);
 
   // Add click outside handler for profile dropdown
   useEffect(() => {
@@ -716,29 +739,71 @@ export default function DashboardPage() {
           transition={{ delay: 0.8 }}
           className="mt-8 bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm"
         >
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold bg-gradient-to-r from-black to-gray-600 dark:from-white dark:to-gray-400 bg-clip-text text-transparent">
-              Review Activity
-            </h2>
-            <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-              <span>Less</span>
-              <div className="flex gap-1">
-                {[0, 1, 2, 3].map((intensity) => (
-                  <div
-                    key={intensity}
-                    className={`w-3 h-3 rounded-sm ${getColor(intensity)}`}
-                  />
-                ))}
+          <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+            <div>
+              <h2 className="text-xl font-bold bg-gradient-to-r from-black to-gray-600 dark:from-white dark:to-gray-400 bg-clip-text text-transparent">
+                Review Activity
+              </h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                Track your daily review progress over the last 90 days
+              </p>
+            </div>
+            <div className="flex flex-col items-end gap-2">
+              <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                <span>Less</span>
+                <div className="flex gap-1">
+                  {[0, 1, 2, 3, 4].map((intensity) => (
+                    <div
+                      key={intensity}
+                      className={`w-4 h-4 rounded-md transition-all duration-200 ${intensity === 0
+                          ? 'bg-gray-100 dark:bg-gray-800'
+                          : intensity === 1
+                            ? 'bg-blue-100 dark:bg-blue-900'
+                            : intensity === 2
+                              ? 'bg-blue-200 dark:bg-blue-800'
+                              : intensity === 3
+                                ? 'bg-blue-300 dark:bg-blue-700'
+                                : 'bg-blue-400 dark:bg-blue-600'
+                        }`}
+                    />
+                  ))}
+                </div>
+                <span>More</span>
               </div>
-              <span>More</span>
+              <div className="text-xs text-gray-400 dark:text-gray-500">
+                {heatmapData.reduce((sum, day) => sum + day.value, 0)} total reviews
+              </div>
             </div>
           </div>
-          <CalendarHeatmap
-            data={dailyStats.map(stat => ({
-              date: new Date(stat.date).toISOString(),
-              value: stat.reviews
-            }))}
-          />
+          <div className="relative">
+            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-white dark:from-gray-800 via-transparent to-white dark:to-gray-800 pointer-events-none z-10" />
+            <div className="overflow-x-auto pb-4">
+              <div className="min-w-[800px]">
+                <CalendarHeatmap
+                  data={heatmapData}
+                  startDate={new Date(new Date().setDate(new Date().getDate() - 90))}
+                  endDate={new Date()}
+                />
+              </div>
+            </div>
+            <div className="absolute bottom-0 left-0 w-full h-4 bg-gradient-to-t from-white dark:from-gray-800 to-transparent pointer-events-none z-10" />
+          </div>
+          <div className="mt-4 flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
+            <div className="flex items-center gap-2">
+              <Calendar className="w-4 h-4" />
+              <span>Last 90 days</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <TrendingUp className="w-4 h-4" />
+              <span>
+                {heatmapData.length > 0
+                  ? `${Math.round(
+                    (heatmapData.filter(day => day.value > 0).length / heatmapData.length) * 100
+                  )}% active days`
+                  : '0% active days'}
+              </span>
+            </div>
+          </div>
         </motion.div>
 
         {/* Upcoming Reviews */}
