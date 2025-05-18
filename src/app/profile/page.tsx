@@ -93,8 +93,8 @@ export default function ProfilePage() {
                  {/* Placeholder for profile image */}                
                  <div className="flex items-center space-x-4">
                     <div className="w-16 h-16 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-                      {user?.photoUrl ? (
-                         <Image src={user.photoUrl} alt="Profile" width={64} height={64} objectFit="cover" />
+                      {user?.photoURL ? (
+                         <Image src={user.photoURL} alt="Profile" width={64} height={64} objectFit="cover" />
                       ) : (
                          <User className="w-8 h-8 text-gray-500 dark:text-gray-400" />
                       )}
@@ -119,8 +119,8 @@ export default function ProfilePage() {
                        <input type="text" name="displayName" id="displayName" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Enter display name" defaultValue={user?.displayName || ''} />
                     </div>
                     <div>
-                       <label htmlFor="photoUrl" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Profile Image URL</label>
-                       <input type="text" name="photoUrl" id="photoUrl" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Enter image URL" defaultValue={user?.photoUrl || ''} />
+                       <label htmlFor="photoURL" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Profile Image URL</label>
+                       <input type="text" name="photoURL" id="photoURL" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Enter image URL" defaultValue={user?.photoURL || ''} />
                     </div>
                      {/* Add other editable fields here */}
                     <button className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md">Save Changes</button>
