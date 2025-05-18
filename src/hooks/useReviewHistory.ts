@@ -82,7 +82,7 @@ export function useReviewHistory(deckId: string = '<a-known-deck-id>', limitCoun
   return { records, dailyStats, streak, loading, error };
 }
 
-function calculateDailyStats(reviews: ReviewRecord[]): DailyStats[] {
+export function calculateDailyStats(reviews: ReviewRecord[]): DailyStats[] {
   const statsMap = new Map<string, { count: number; totalPerformance: number }>();
 
   // Group reviews by date
@@ -106,7 +106,7 @@ function calculateDailyStats(reviews: ReviewRecord[]): DailyStats[] {
     .sort((a, b) => a.date.localeCompare(b.date));
 }
 
-function calculateStreak(reviews: ReviewRecord[]): number {
+export function calculateStreak(reviews: ReviewRecord[]): number {
   if (reviews.length === 0) return 0;
 
   const today = new Date();

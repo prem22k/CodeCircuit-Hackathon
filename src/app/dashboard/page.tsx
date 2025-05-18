@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDecks } from '@/hooks/useDecks';
-import { useReviewHistory } from '@/hooks/useReviewHistory';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   BarChart,
@@ -45,8 +44,11 @@ import { CalendarHeatmap } from '@/components/CalendarHeatmap';
 import { StreakNotification } from '@/components/StreakNotification';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { db } from '@/lib/firebase';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, limit } from 'firebase/firestore';
 import Image from 'next/image';
+
+// Import necessary types and functions from useReviewHistory
+import { DailyStats, ReviewRecord, calculateDailyStats, calculateStreak } from '../../hooks/useReviewHistory';
 
 interface Deck {
   id: string;
@@ -115,13 +117,14 @@ export default function DashboardPage() {
     learning: 0,
     new: 0
   });
-  const { dailyStats, streak, loading: historyLoading } = useReviewHistory('all');
+  const [dailyStats, setDailyStats] = useState<DailyStats[]>([]);
+  const [streak, setStreak] = useState(0);
+  const [historyLoading, setHistoryLoading] = useState(true);
   const [lastReviewDate, setLastReviewDate] = useState<Date | null>(null);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   // Add state for heatmap data
   const [heatmapData, setHeatmapData] = useState<Array<{ date: string; value: number }>>([]);
-  const [maxReviews, setMaxReviews] = useState(0);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -129,13 +132,61 @@ export default function DashboardPage() {
     }
   }, [user, authLoading, router]);
 
+  // Fetch and aggregate review history for all decks
+  useEffect(() => {
+    const fetchAllHistory = async () => {
+      if (!user || !decks) {
+        setDailyStats([]);
+        setStreak(0);
+        setHistoryLoading(false);
+        return;
+      }
+
+      setHistoryLoading(true);
+      let allReviewRecords: ReviewRecord[] = [];
+
+      try {
+        for (const deck of decks) {
+          const historyRef = collection(db, `users/${user.id}/decks/${deck.id}/history`);
+          // Fetch all history for each deck (up to a reasonable limit if needed)
+          const q = query(historyRef, orderBy('timestamp', 'desc'), limit(365)); // Fetch last 365 reviews per deck
+          const snapshot = await getDocs(q);
+          const deckHistory = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data(),
+            timestamp: doc.data().timestamp.toDate()
+          })) as ReviewRecord[];
+          allReviewRecords = [...allReviewRecords, ...deckHistory];
+        }
+
+        // Calculate daily stats and streak from aggregated history
+        const calculatedDailyStats = calculateDailyStats(allReviewRecords);
+        const calculatedStreak = calculateStreak(allReviewRecords);
+
+        setDailyStats(calculatedDailyStats);
+        setStreak(calculatedStreak);
+
+      } catch (error) {
+        console.error('Error fetching all review history:', error);
+        setDailyStats([]);
+        setStreak(0);
+        // Handle error state as needed
+      } finally {
+        setHistoryLoading(false);
+      }
+    };
+
+    fetchAllHistory();
+
+  }, [user, decks]); // Depend on user and decks
+
   useEffect(() => {
     if (decks) {
       const totalCards = decks.reduce((sum, deck) => sum + (deck.cards?.length || 0), 0);
       const totalReviews = decks.reduce((sum, deck) => sum + (deck.reviewCount || 0), 0);
       const averagePerformance = decks.reduce((sum, deck) => sum + (deck.averagePerformance || 0), 0) / (decks.length || 1);
 
-      // Calculate review progress
+      // Calculate review progress from all cards across all decks
       const allCards = decks.flatMap(deck => deck.cards || []);
       const progress = getReviewProgress(allCards);
 
@@ -147,9 +198,9 @@ export default function DashboardPage() {
         ...progress
       });
     }
-  }, [decks, streak]);
+  }, [decks, streak]); // Depend on decks and the new aggregated streak
 
-  // Update heatmap data when dailyStats changes
+  // Update heatmap data when dailyStats changes (now populated by fetchAllHistory)
   useEffect(() => {
     if (dailyStats.length > 0) {
       const data = dailyStats.map(stat => ({
@@ -158,15 +209,9 @@ export default function DashboardPage() {
       }));
       setHeatmapData(data);
     } else {
-      // If no daily stats, set heatmap data to an empty array
       setHeatmapData([]);
     }
   }, [dailyStats]);
-
-  // Calculate the date range for the heatmap (last 90 days)
-  const today = new Date();
-  const ninetyDaysAgo = new Date();
-  ninetyDaysAgo.setDate(today.getDate() - 90);
 
   // Add click outside handler for profile dropdown
   useEffect(() => {
@@ -181,7 +226,12 @@ export default function DashboardPage() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  if (authLoading || decksLoading || historyLoading) {
+  // Calculate the date range for the heatmap (last 90 days) - keep this for passing to component
+  const today = new Date();
+  const ninetyDaysAgo = new Date();
+  ninetyDaysAgo.setDate(today.getDate() - 90);
+
+  if (authLoading || decksLoading || historyLoading) { // Include historyLoading in the check
     return (
       <div className="flex justify-center items-center min-h-[60vh]">
         <LoadingSpinner />
@@ -804,7 +854,7 @@ export default function DashboardPage() {
                       className={`w-4 h-4 rounded-md transition-all duration-200 ${intensity === 0
                         ? 'bg-gray-100 dark:bg-gray-800'
                         : intensity === 1
-                          ? 'bg-blue-100 dark:bg-blue-900' // Using blue for the legend as per previous change
+                          ? 'bg-blue-100 dark:bg-blue-900'
                           : intensity === 2
                             ? 'bg-blue-200 dark:bg-blue-800'
                             : intensity === 3
@@ -816,8 +866,9 @@ export default function DashboardPage() {
                 </div>
                 <span>More</span>
               </div>
+              {/* Display total reviews from aggregated data */}
               <div className="text-xs text-gray-400 dark:text-gray-500">
-                {heatmapData.reduce((sum, day) => sum + day.value, 0)} total reviews
+                {dailyStats.reduce((sum, day) => sum + day.reviews, 0)} total reviews
               </div>
             </div>
           </div>
@@ -841,10 +892,11 @@ export default function DashboardPage() {
             </div>
             <div className="flex items-center gap-2">
               <TrendingUp className="w-4 h-4" />
+              {/* Display active days percentage from aggregated data */}
               <span>
-                {heatmapData.length > 0
+                {dailyStats.length > 0
                   ? `${Math.round(
-                    (heatmapData.filter(day => day.value > 0).length / heatmapData.length) * 100
+                    (dailyStats.filter(day => day.reviews > 0).length / dailyStats.filter(day => new Date(day.date) >= ninetyDaysAgo && new Date(day.date) <= today).length) * 100
                   )}% active days`
                   : '0% active days'}
               </span>
