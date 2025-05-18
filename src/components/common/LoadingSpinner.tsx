@@ -4,13 +4,7 @@ interface LoadingSpinnerProps {
 
 export function LoadingSpinner({ className = '' }: LoadingSpinnerProps) {
   return (
-    <div
-      className={`animate-spin ${
-        className || 'w-8 h-8 text-gray-500 dark:text-gray-400'
-      }`}
-      role="status"
-      aria-label="Loading..."
-    >
+    <div className={`animate-spin ${className}`}>
       <svg
         className="w-full h-full"
         viewBox="0 0 24 24"

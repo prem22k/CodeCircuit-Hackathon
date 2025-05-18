@@ -3,7 +3,6 @@
 import { Inter } from 'next/font/google';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { ToastProvider } from '@/components/common/Toast';
-import { DashboardHeader } from '@/components/layout/DashboardHeader';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -17,7 +16,6 @@ export default function DashboardLayout({
       <AuthProvider>
         <ToastProvider>
           <div className="min-h-screen flex flex-col">
-            <DashboardHeader />
             <main className="flex-grow">
               <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
                 {children}

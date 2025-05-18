@@ -5,11 +5,11 @@ import { useParams, useRouter } from 'next/navigation';
 import { doc, onSnapshot, updateDoc, arrayRemove } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
-import {
-  ArrowLeft,
-  Plus,
-  Pencil,
-  Trash2,
+import { 
+  ArrowLeft, 
+  Plus, 
+  Pencil, 
+  Trash2, 
   Brain,
   BookOpen,
   Clock,
@@ -56,10 +56,10 @@ export default function DeckDetailPage() {
 
     // Ensure deckId is a string before fetching
     if (typeof deckId !== 'string') {
-      setLoading(false);
-      toast.error('Invalid deck ID.');
-      router.push('/decks'); // Redirect to decks list
-      return;
+        setLoading(false);
+        toast.error('Invalid deck ID.');
+        router.push('/decks'); // Redirect to decks list
+        return;
     }
 
     const deckRef = doc(db, `users/${user.id}/decks/${deckId}`);
@@ -82,8 +82,8 @@ export default function DeckDetailPage() {
 
   const filteredCards = deck?.cards?.filter((card: any) => {
     const matchesSearch = card.front.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      card.back.toLowerCase().includes(searchQuery.toLowerCase());
-
+                         card.back.toLowerCase().includes(searchQuery.toLowerCase());
+    
     if (filterBy === 'mastered') {
       return matchesSearch && card.difficulty === 5;
     }
@@ -118,7 +118,7 @@ export default function DeckDetailPage() {
   }
 
   if (!deck) {
-    // This case is handled by the redirect in useEffect if deckId is invalid or not found
+     // This case is handled by the redirect in useEffect if deckId is invalid or not found
     return null;
   }
 
@@ -141,7 +141,7 @@ export default function DeckDetailPage() {
           </div>
         </div>
         <div className="flex gap-2">
-          <motion.button
+           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => router.push(`/decks/${deckId}/cards/new`)}
@@ -151,7 +151,7 @@ export default function DeckDetailPage() {
             <span>Add Card</span>
           </motion.button>
           <motion.button
-            whileHover={{ scale: 1.05 }}
+             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => router.push(`/decks/${deckId}/study`)}
             className="px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 flex items-center space-x-2"
@@ -159,7 +159,7 @@ export default function DeckDetailPage() {
             <Brain className="w-5 h-5" />
             <span>Study Deck</span>
           </motion.button>
-          <motion.button
+           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => router.push(`/decks/${deckId}/edit`)}
@@ -169,7 +169,7 @@ export default function DeckDetailPage() {
             <span>Edit Deck</span>
           </motion.button>
           <motion.button
-            whileHover={{ scale: 1.05 }}
+             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setIsDeleteModalOpen(true)}
             className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 flex items-center space-x-2"
@@ -229,77 +229,79 @@ export default function DeckDetailPage() {
               <span className="text-gray-700 dark:text-gray-300">Sort</span>
             </motion.button>
             <AnimatePresence>
-              {isSortOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-10"
-                >
-                  {[
-                    { value: 'newest', label: 'Newest First' },
-                    { value: 'oldest', label: 'Oldest First' },
-                    { value: 'difficulty', label: 'Difficulty' }
-                  ].map((option) => (
-                    <button
-                      key={option.value}
-                      onClick={() => {
-                        setSortBy(option.value as SortOption);
-                        setIsSortOpen(false);
-                      }}
-                      className={`w-full px-4 py-2 text-left text-sm ${sortBy === option.value
-                          ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400'
-                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                {isSortOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-10"
+                  >
+                    {[
+                       { value: 'newest', label: 'Newest First' },
+                       { value: 'oldest', label: 'Oldest First' },
+                       { value: 'difficulty', label: 'Difficulty' }
+                    ].map((option) => (
+                      <button
+                        key={option.value}
+                        onClick={() => {
+                          setSortBy(option.value as SortOption);
+                          setIsSortOpen(false);
+                        }}
+                        className={`w-full px-4 py-2 text-left text-sm ${
+                          sortBy === option.value
+                            ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400'
+                            : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                         }`}
-                    >
-                      {option.label}
-                    </button>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
           </div>
           <div className="relative">
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setIsFilterOpen(!isFilterOpen)}
-              className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg flex items-center gap-2 hover:border-indigo-500 dark:hover:border-indigo-400 transition-all duration-300"
+               className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg flex items-center gap-2 hover:border-indigo-500 dark:hover:border-indigo-400 transition-all duration-300"
             >
               <Filter className="w-4 h-4 text-gray-600 dark:text-gray-300" />
               <span className="text-gray-700 dark:text-gray-300">Filter</span>
             </motion.button>
-            <AnimatePresence>
-              {isFilterOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-10"
-                >
-                  {[
-                    { value: 'all', label: 'All Cards' },
-                    { value: 'mastered', label: 'Mastered' },
-                    { value: 'learning', label: 'Learning' },
-                    { value: 'not-started', label: 'Not Started' }
-                  ].map((option) => (
-                    <button
-                      key={option.value}
-                      onClick={() => {
-                        setFilterBy(option.value as FilterOption);
-                        setIsFilterOpen(false);
-                      }}
-                      className={`w-full px-4 py-2 text-left text-sm ${filterBy === option.value
-                          ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400'
-                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+             <AnimatePresence>
+                {isFilterOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-10"
+                  >
+                    {[
+                      { value: 'all', label: 'All Cards' },
+                      { value: 'mastered', label: 'Mastered' },
+                      { value: 'learning', label: 'Learning' },
+                      { value: 'not-started', label: 'Not Started' }
+                    ].map((option) => (
+                      <button
+                        key={option.value}
+                        onClick={() => {
+                          setFilterBy(option.value as FilterOption);
+                          setIsFilterOpen(false);
+                        }}
+                        className={`w-full px-4 py-2 text-left text-sm ${
+                          filterBy === option.value
+                            ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400'
+                            : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                         }`}
-                    >
-                      {option.label}
-                    </button>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
           </div>
         </div>
       </div>
@@ -316,12 +318,12 @@ export default function DeckDetailPage() {
               transition={{ duration: 0.4 }}
               className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 flex flex-col"
             >
-              <Link href={`/decks/${deckId}/cards/${card.id}/edit`} className="flex flex-col flex-grow group">
+               <Link href={`/decks/${deckId}/cards/${card.id}/edit`} className="flex flex-col flex-grow group">
                 <div className="flex justify-between items-start mb-3">
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white leading-tight pr-4">
                     {card.front}
                   </h3>
-                  {/* Edit and Delete buttons moved outside the Link */}
+                   {/* Edit and Delete buttons moved outside the Link */}
                 </div>
                 <p className="text-gray-600 dark:text-gray-400 text-sm line-clamp-3 flex-grow mb-4">
                   {card.back}
@@ -329,50 +331,50 @@ export default function DeckDetailPage() {
 
                 <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mt-auto">
                   <span>Difficulty: {card.difficulty || 0}/5</span>
-                  <span>Last reviewed: {card.lastReviewed ? new Date(card.lastReviewed.seconds * 1000).toLocaleDateString() : 'Never'}</span>
-                </div>
+                   <span>Last reviewed: {card.lastReviewed ? new Date(card.lastReviewed.seconds * 1000).toLocaleDateString() : 'Never'}</span>
+                 </div>
               </Link>
               <div className="flex justify-end gap-1 pt-4 border-t border-gray-100 dark:border-gray-700 mt-4">
-                <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => router.push(`/decks/${deckId}/cards/${card.id}/edit`)}
-                  className="p-1.5 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
-                >
-                  <Pencil className="w-4 h-4" />
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => setCardToDelete(card)}
-                  className="p-1.5 text-gray-400 hover:text-red-500 transition-colors"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </motion.button>
+                 <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => router.push(`/decks/${deckId}/cards/${card.id}/edit`)}
+                    className="p-1.5 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </motion.button>
+                   <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => setCardToDelete(card)}
+                    className="p-1.5 text-gray-400 hover:text-red-500 transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </motion.button>
               </div>
             </motion.div>
           ))
-          }
+        }
         </AnimatePresence>
 
-        {/* Add New Card Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
-          transition={{ duration: 0.4, delay: filteredCards.length * 0.05 }}
-          className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 flex flex-col items-center justify-center text-center cursor-pointer hover:shadow-lg transition-shadow group"
-          onClick={() => router.push(`/decks/${deckId}/cards/new`)}
-        >
-          <motion.div
-            whileHover={{ scale: 1.05, rotate: 90 }}
-            whileTap={{ scale: 0.95 }}
-            className="p-4 bg-indigo-100 dark:bg-indigo-900/30 rounded-full mb-4"
+         {/* Add New Card Card */}
+         <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
+            transition={{ duration: 0.4, delay: filteredCards.length * 0.05 }}
+            className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 flex flex-col items-center justify-center text-center cursor-pointer hover:shadow-lg transition-shadow group"
+            onClick={() => router.push(`/decks/${deckId}/cards/new`)}
           >
-            <Plus className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
+            <motion.div
+              whileHover={{ scale: 1.05, rotate: 90 }}
+              whileTap={{ scale: 0.95 }}
+              className="p-4 bg-indigo-100 dark:bg-indigo-900/30 rounded-full mb-4"
+            >
+              <Plus className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
+            </motion.div>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Add New Card</h3>
           </motion.div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Add New Card</h3>
-        </motion.div>
 
       </div>
 
@@ -407,8 +409,8 @@ export default function DeckDetailPage() {
         </motion.div>
       )}
 
-      {/* Empty State - Search/Filter */}
-      {sortedCards.length === 0 && (searchQuery || filterBy !== 'all') && (
+       {/* Empty State - Search/Filter */}
+       {sortedCards.length === 0 && (searchQuery || filterBy !== 'all') && (
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -424,7 +426,7 @@ export default function DeckDetailPage() {
           </div>
           <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">No matching cards found</h3>
           <p className="text-gray-600 dark:text-gray-400 mb-6">
-            Try adjusting your search or filters.
+             Try adjusting your search or filters.
           </p>
         </motion.div>
       )}
