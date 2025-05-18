@@ -152,18 +152,11 @@ export default function HomePage() {
                   transition={{ type: "spring", stiffness: 300 }}
                   className="relative"
                 >
-                  <Image
+                  {/* Temporarily using img tag for debugging */}
+                  <img
                     src={'/light.png'}
                     alt="Student studying illustration"
-                    fill
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    className="object-contain drop-shadow-2xl transition-opacity duration-300"
-                    priority
-                    onError={(e) => {
-                      console.error('Error loading image:', e);
-                      const target = e.target as HTMLImageElement;
-                      target.src = theme === 'dark' ? '/dark.png' : '/light.png';
-                    }}
+                    className="object-contain drop-shadow-2xl transition-opacity duration-300 w-full h-full absolute inset-0"
                   />
                 </motion.div>
               </div>
