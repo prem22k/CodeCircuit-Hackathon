@@ -104,6 +104,14 @@ export default function DeckDetailPage() {
             const deckData = { id: doc.id, ...doc.data() } as Deck;
             console.log("Deck data retrieved:", deckData.title);
             setDeck(deckData);
+
+            // Temporary log to inspect cards immediately after setting state
+            console.log("Cards data immediately after setting state:", deckData.cards);
+
+            // TEMPORARY: Set deck to null immediately to prevent downstream processing
+            // If the page is stable now, the issue is triggered by processing deckData.cards
+            setDeck(null);
+
           } else {
             console.error("Deck not found");
             toast.error('Deck not found');
