@@ -113,4 +113,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - Built for the CodeCircuit Hackathon
 - Inspired by Anki and other spaced repetition systems
-- Thanks to all contributors and supporters
