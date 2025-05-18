@@ -42,6 +42,12 @@ export default function HomePage() {
     <div className="space-y-24">
       {/* Hero Section */}
       <div className="relative overflow-hidden bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
+        {/* Animated background gradients */}
+        <div className="absolute inset-0">
+          <div className="absolute top-0 -left-4 w-72 h-72 bg-purple-300 dark:bg-purple-900 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-xl opacity-70 animate-blob" />
+          <div className="absolute top-0 -right-4 w-72 h-72 bg-yellow-300 dark:bg-yellow-900 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-xl opacity-70 animate-blob animation-delay-2000" />
+          <div className="absolute -bottom-8 left-20 w-72 h-72 bg-pink-300 dark:bg-pink-900 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-xl opacity-70 animate-blob animation-delay-4000" />
+        </div>
         <div className="absolute inset-0 bg-grid-pattern opacity-5" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
@@ -55,7 +61,7 @@ export default function HomePage() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
-                className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-indigo-500/10 to-purple-500/10 text-indigo-700 dark:text-indigo-300 text-sm font-medium backdrop-blur-sm"
+                className="inline-flex items-center px-4 py-2 rounded-full bg-white/10 dark:bg-white/5 backdrop-blur-md border border-white/20 dark:border-white/10 text-indigo-700 dark:text-indigo-300 text-sm font-medium shadow-lg"
               >
                 <Brain className="w-5 h-5 mr-2" />
                 <span>Smart Learning Platform</span>
@@ -65,7 +71,7 @@ export default function HomePage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.4 }}
-                className="text-5xl sm:text-6xl md:text-7xl font-bold tracking-tight text-gray-900 dark:text-white"
+                className="text-5xl sm:text-6xl md:text-7xl font-bold tracking-tight text-gray-900 dark:text-white font-display"
               >
                 Learn Smarter with{' '}
                 <span className="relative inline-block">
@@ -85,7 +91,7 @@ export default function HomePage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.6 }}
-                className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl lg:max-w-none mx-auto lg:mx-0 leading-relaxed"
+                className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl lg:max-w-none mx-auto lg:mx-0 leading-relaxed font-body"
               >
                 Create AI-powered flashcards, study efficiently, and master any subject with our smart learning platform.
               </motion.p>
@@ -99,29 +105,31 @@ export default function HomePage() {
                 {user ? (
                   <Link
                     href="/decks"
-                    className="group relative px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center overflow-hidden"
+                    className="group relative px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center overflow-hidden backdrop-blur-sm"
                   >
                     <span className="relative z-10 flex items-center">
                       My Decks
                       <ChevronRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                     </span>
                     <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   </Link>
                 ) : (
                   <Link
                     href="/login"
-                    className="group relative px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center overflow-hidden"
+                    className="group relative px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center overflow-hidden backdrop-blur-sm"
                   >
                     <span className="relative z-10 flex items-center">
                       Get Started
                       <ChevronRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                     </span>
                     <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   </Link>
                 )}
                 <Link
                   href="/dashboard"
-                  className="group relative px-8 py-4 border-2 border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400 rounded-xl font-semibold hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all duration-300 flex items-center justify-center"
+                  className="group relative px-8 py-4 bg-white/10 dark:bg-white/5 backdrop-blur-md border border-white/20 dark:border-white/10 text-indigo-600 dark:text-indigo-400 rounded-xl font-semibold hover:bg-white/20 dark:hover:bg-white/10 transition-all duration-300 flex items-center justify-center"
                 >
                   <span className="relative z-10 flex items-center">
                     View Dashboard
@@ -138,14 +146,20 @@ export default function HomePage() {
               className="relative flex justify-center lg:justify-end"
             >
               <div className="relative aspect-square max-w-sm lg:max-w-lg w-full">
-                <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-full blur-3xl" />
-                <Image
-                  src={theme === 'dark' ? '/dark.png' : '/light.png'}
-                  alt="Student studying illustration"
-                  fill
-                  className="object-contain drop-shadow-2xl transition-opacity duration-300"
-                  priority
-                />
+                <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-full blur-3xl animate-pulse" />
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                  className="relative"
+                >
+                  <Image
+                    src={theme === 'dark' ? '/dark.png' : '/light.png'}
+                    alt="Student studying illustration"
+                    fill
+                    className="object-contain drop-shadow-2xl transition-opacity duration-300"
+                    priority
+                  />
+                </motion.div>
               </div>
             </motion.div>
           </div>
@@ -167,15 +181,15 @@ export default function HomePage() {
             viewport={{ once: true }}
             className="inline-block mb-4"
           >
-            <span className="inline-flex items-center px-4 py-2 rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-sm font-medium">
+            <span className="inline-flex items-center px-4 py-2 rounded-full bg-white/10 dark:bg-white/5 backdrop-blur-md border border-white/20 dark:border-white/10 text-indigo-700 dark:text-indigo-300 text-sm font-medium shadow-lg">
               <Star className="w-4 h-4 mr-2" />
               Powerful Features
             </span>
           </motion.div>
-          <h2 className="text-4xl font-bold mb-4 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+          <h2 className="text-4xl font-bold mb-4 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent font-display">
             Everything You Need to Learn
           </h2>
-          <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+          <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto font-body">
             Powerful tools and features to help you learn efficiently and effectively
           </p>
         </div>
@@ -200,19 +214,23 @@ export default function HomePage() {
           ].map((feature, index) => (
             <motion.div
               key={feature.title}
-              className="group relative bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300"
+              className="group relative bg-white/10 dark:bg-white/5 backdrop-blur-md border border-white/20 dark:border-white/10 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300"
               variants={fadeInUp}
-              whileHover={{ y: -5 }}
+              whileHover={{ y: -5, scale: 1.02 }}
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl" />
+              <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/50 to-purple-50/50 dark:from-indigo-900/20 dark:to-purple-900/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl" />
               <div className="relative">
                 <div className="flex justify-center mb-6">
-                  <div className="p-4 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 rounded-xl group-hover:scale-110 transition-transform duration-300">
+                  <motion.div
+                    className="p-4 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 rounded-xl group-hover:scale-110 transition-transform duration-300"
+                    whileHover={{ rotate: [0, -10, 10, -10, 0] }}
+                    transition={{ duration: 0.5 }}
+                  >
                     <feature.icon className="w-12 h-12 text-indigo-600 dark:text-indigo-400" />
-                  </div>
+                  </motion.div>
                 </div>
-                <h3 className="text-xl font-semibold mb-3 text-gray-900 dark:text-white text-center">{feature.title}</h3>
-                <p className="text-gray-600 dark:text-gray-300 text-center">
+                <h3 className="text-xl font-semibold mb-3 text-gray-900 dark:text-white text-center font-display">{feature.title}</h3>
+                <p className="text-gray-600 dark:text-gray-300 text-center font-body">
                   {feature.description}
                 </p>
               </div>
@@ -237,15 +255,15 @@ export default function HomePage() {
               viewport={{ once: true }}
               className="inline-block mb-4"
             >
-              <span className="inline-flex items-center px-4 py-2 rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-sm font-medium">
+              <span className="inline-flex items-center px-4 py-2 rounded-full bg-white/10 dark:bg-white/5 backdrop-blur-md border border-white/20 dark:border-white/10 text-indigo-700 dark:text-indigo-300 text-sm font-medium shadow-lg">
                 <Target className="w-4 h-4 mr-2" />
                 Simple Process
               </span>
             </motion.div>
-            <h2 className="text-4xl font-bold mb-4 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+            <h2 className="text-4xl font-bold mb-4 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent font-display">
               How It Works
             </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto font-body">
               Get started in minutes and begin your learning journey
             </p>
           </motion.div>
@@ -284,12 +302,16 @@ export default function HomePage() {
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                 >
-                  <div className="relative z-10 bg-white dark:bg-gray-800 rounded-2xl p-8 text-center shadow-lg hover:shadow-xl transition-all duration-300 group">
-                    <div className="w-16 h-16 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                  <div className="relative z-10 bg-white/10 dark:bg-white/5 backdrop-blur-md border border-white/20 dark:border-white/10 rounded-2xl p-8 text-center shadow-lg hover:shadow-xl transition-all duration-300 group">
+                    <motion.div
+                      className="w-16 h-16 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300"
+                      whileHover={{ rotate: [0, -10, 10, -10, 0] }}
+                      transition={{ duration: 0.5 }}
+                    >
                       <item.icon className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
-                    </div>
-                    <h3 className="font-semibold mb-2 text-gray-900 dark:text-white">{item.title}</h3>
-                    <p className="text-gray-600 dark:text-gray-300">
+                    </motion.div>
+                    <h3 className="font-semibold mb-2 text-gray-900 dark:text-white font-display">{item.title}</h3>
+                    <p className="text-gray-600 dark:text-gray-300 font-body">
                       {item.description}
                     </p>
                   </div>
@@ -308,6 +330,12 @@ export default function HomePage() {
         viewport={{ once: true }}
         transition={{ duration: 0.5 }}
       >
+        {/* Animated background gradients */}
+        <div className="absolute inset-0">
+          <div className="absolute top-0 -left-4 w-72 h-72 bg-purple-300 dark:bg-purple-900 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-xl opacity-70 animate-blob" />
+          <div className="absolute top-0 -right-4 w-72 h-72 bg-yellow-300 dark:bg-yellow-900 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-xl opacity-70 animate-blob animation-delay-2000" />
+          <div className="absolute -bottom-8 left-20 w-72 h-72 bg-pink-300 dark:bg-pink-900 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-xl opacity-70 animate-blob animation-delay-4000" />
+        </div>
         <div className="absolute inset-0 bg-grid-pattern opacity-5" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
           <motion.div
@@ -316,20 +344,20 @@ export default function HomePage() {
             viewport={{ once: true }}
             className="inline-block mb-4"
           >
-            <span className="inline-flex items-center px-4 py-2 rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-sm font-medium">
+            <span className="inline-flex items-center px-4 py-2 rounded-full bg-white/10 dark:bg-white/5 backdrop-blur-md border border-white/20 dark:border-white/10 text-indigo-700 dark:text-indigo-300 text-sm font-medium shadow-lg">
               <Users className="w-4 h-4 mr-2" />
               Join Our Community
             </span>
           </motion.div>
-          <h2 className="text-4xl font-bold mb-4 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+          <h2 className="text-4xl font-bold mb-4 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent font-display">
             Ready to Boost Your Learning?
           </h2>
-          <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
+          <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto font-body">
             Join thousands of students who are learning smarter with BrainBoost.
           </p>
           <motion.button
             onClick={() => router.push(user ? '/decks' : '/login')}
-            className="group relative px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center mx-auto overflow-hidden"
+            className="group relative px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center mx-auto overflow-hidden backdrop-blur-sm"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
@@ -338,6 +366,7 @@ export default function HomePage() {
               <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
             </span>
             <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           </motion.button>
         </div>
       </motion.div>
