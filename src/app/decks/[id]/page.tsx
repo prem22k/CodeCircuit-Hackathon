@@ -2,14 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { doc, onSnapshot, updateDoc, arrayRemove, collection } from 'firebase/firestore';
+import { doc, onSnapshot, updateDoc, arrayRemove } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
-import { 
-  ArrowLeft, 
-  Plus, 
-  Pencil, 
-  Trash2, 
+import {
+  ArrowLeft,
+  Plus,
+  Pencil,
+  Trash2,
   Brain,
   BookOpen,
   Clock,
@@ -29,19 +29,38 @@ import Image from 'next/image';
 import { useTheme } from 'next-themes';
 import Link from 'next/link';
 
+interface Card {
+  id: string;
+  front: string;
+  back: string;
+  difficulty: number;
+  createdAt: {
+    seconds: number;
+  };
+}
+
+interface Deck {
+  id: string;
+  title: string;
+  cards: Card[];
+  reviewCount: number;
+  averagePerformance: number;
+}
+
 type SortOption = 'newest' | 'oldest' | 'difficulty';
 type FilterOption = 'all' | 'mastered' | 'learning' | 'not-started';
 
 export default function DeckDetailPage() {
   const params = useParams();
-  const deckId = Array.isArray(params?.id) ? params.id[0] : params?.id;
+  // Simplified parameter handling
+  const deckId = typeof params?.id === 'string' ? params.id :
+    Array.isArray(params?.id) ? params.id[0] : null;
 
   const router = useRouter();
   const { user } = useAuth();
   const { theme } = useTheme();
-  const [deck, setDeck] = useState<any>(null);
-  const [cards, setCards] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deck, setDeck] = useState<Deck | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('newest');
   const [filterBy, setFilterBy] = useState<FilterOption>('all');
@@ -51,65 +70,78 @@ export default function DeckDetailPage() {
   const [cardToDelete, setCardToDelete] = useState<any>(null);
 
   useEffect(() => {
-    console.log("useEffect triggered", { user, deckId });
-    if (!user) {
-      console.log("User not found, redirecting to login.");
+    // Added console logs for debugging
+    console.log("Effect running, user:", user?.id);
+    console.log("Effect running, deckId:", deckId);
+
+    if (!user || !user.id) {
+      console.log("No user found, redirecting to login");
       router.push('/login');
       return;
     }
 
     // Ensure deckId is a string before fetching
-    if (typeof deckId !== 'string') {
-      console.error('Invalid deck ID.', deckId);
+    if (!deckId) {
+      console.error('Invalid deck ID:', deckId);
       setLoading(false);
       toast.error('Invalid deck ID.');
       router.push('/decks'); // Redirect to decks list
       return;
     }
 
-    console.log(`Attempting to subscribe to deck and cards for user ${user.id}, deck ${deckId}`);
-    const deckRef = doc(db, `users/${user.id}/decks/${deckId}`);
-    const cardsRef = collection(db, `users/${user.id}/decks/${deckId}/cards`);
+    console.log("Attempting to fetch deck:", deckId, "for user:", user.id);
 
-    // Subscribe to deck changes
-    const unsubscribeDeck = onSnapshot(deckRef, (doc) => {
-      console.log("Deck snapshot received:", doc.exists() ? doc.data() : "Deck does not exist");
-      if (doc.exists()) {
-        setDeck({ id: doc.id, ...doc.data() });
-      } else {
-        toast.error('Deck not found');
-        router.push('/decks');
-      }
-    }, (error) => {
-      console.error('Error fetching deck:', error);
-      toast.error('Failed to load deck');
-    });
+    try {
+      const deckRef = doc(db, `users/${user.id}/decks/${deckId}`);
+      const unsubscribe = onSnapshot(
+        deckRef,
+        (doc) => {
+          console.log("Firestore snapshot received:", doc.exists() ? "Document exists" : "Document does not exist");
+          if (doc.exists()) {
+            const deckData = { id: doc.id, ...doc.data() } as Deck;
+            console.log("Deck data retrieved:", deckData.title);
+            setDeck(deckData);
+          } else {
+            console.error("Deck not found");
+            toast.error('Deck not found');
+            router.push('/decks');
+          }
+          setLoading(false);
+        },
+        (error) => {
+          console.error('Error fetching deck:', error);
+          toast.error(`Failed to load deck: ${error.message}`);
+          setLoading(false);
+          router.push('/decks');
+        }
+      );
 
-    // Subscribe to cards changes
-    const unsubscribeCards = onSnapshot(cardsRef, (snapshot) => {
-      const cardsData = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      console.log("Cards snapshot received:", cardsData.length, "cards");
-      setCards(cardsData);
+      return () => {
+        console.log("Cleaning up subscription");
+        unsubscribe();
+      };
+    } catch (err) {
+      console.error("Error setting up snapshot listener:", err);
+      toast.error(`Error setting up data listener: ${err instanceof Error ? err.message : 'Unknown error'}`);
       setLoading(false);
-    }, (error) => {
-      console.error('Error fetching cards:', error);
-      toast.error('Failed to load cards');
-      setLoading(false);
+      router.push('/decks');
+    }
+  }, [user, deckId, router]); // Added router to dependency array
+
+  // Debug output for component state
+  useEffect(() => {
+    console.log("Current component state:", {
+      loading,
+      deckId,
+      deckExists: !!deck,
+      cardsCount: deck?.cards?.length
     });
+  }, [loading, deckId, deck]);
 
-    return () => {
-      unsubscribeDeck();
-      unsubscribeCards();
-    };
-  }, [user, deckId, router]);
-
-  const filteredCards = cards.filter((card) => {
+  const filteredCards = deck?.cards?.filter((card: any) => {
     const matchesSearch = card.front.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         card.back.toLowerCase().includes(searchQuery.toLowerCase());
-    
+      card.back.toLowerCase().includes(searchQuery.toLowerCase());
+
     if (filterBy === 'mastered') {
       return matchesSearch && card.difficulty === 5;
     }
@@ -120,16 +152,16 @@ export default function DeckDetailPage() {
       return matchesSearch && card.difficulty === 0;
     }
     return matchesSearch;
-  });
+  }) || [];
 
   const sortedCards = [...filteredCards].sort((a: any, b: any) => {
     switch (sortBy) {
       case 'newest':
-        return b.createdAt?.seconds - a.createdAt?.seconds;
+        return (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0);
       case 'oldest':
-        return a.createdAt?.seconds - b.createdAt?.seconds;
+        return (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0);
       case 'difficulty':
-        return b.difficulty - a.difficulty;
+        return (b.difficulty || 0) - (a.difficulty || 0);
       default:
         return 0;
     }
@@ -144,12 +176,23 @@ export default function DeckDetailPage() {
   }
 
   if (!deck) {
-     // This case is handled by the redirect in useEffect if deckId is invalid or not found
-    return null;
+    // This case is handled by the redirect in useEffect if deckId is invalid or not found
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px]">
+        <p className="text-gray-600 dark:text-gray-400 mb-4">Deck not found or still loading...</p>
+        <button
+          onClick={() => router.push('/decks')}
+          className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+        >
+          Return to Decks
+        </button>
+      </div>
+    );
   }
 
   return (
     <div className="space-y-8 min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-6 lg:p-8">
+      {/* Rest of the component remains the same */}
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
         <div className="flex items-center gap-4">
@@ -263,8 +306,8 @@ export default function DeckDetailPage() {
               className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300"
             >
               {sortBy === 'newest' ? <SortDesc className="w-5 h-5" /> :
-               sortBy === 'oldest' ? <SortAsc className="w-5 h-5" /> :
-               sortBy === 'difficulty' ? <Target className="w-5 h-5" /> : <SortDesc className="w-5 h-5" />}
+                sortBy === 'oldest' ? <SortAsc className="w-5 h-5" /> :
+                  sortBy === 'difficulty' ? <Target className="w-5 h-5" /> : <SortDesc className="w-5 h-5" />}
               Sort
               <motion.div animate={{ rotate: isSortOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
                 <ChevronDown className="w-4 h-4" />
@@ -291,11 +334,10 @@ export default function DeckDetailPage() {
                         setSortBy(option.value as SortOption);
                         setIsSortOpen(false);
                       }}
-                      className={`w-full text-left px-4 py-2 text-sm flex items-center gap-2 ${
-                        sortBy === option.value
-                          ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300'
-                          : 'text-gray-700 dark:text-gray-300'
-                      }`}
+                      className={`w-full text-left px-4 py-2 text-sm flex items-center gap-2 ${sortBy === option.value
+                        ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300'
+                        : 'text-gray-700 dark:text-gray-300'
+                        }`}
                     >
                       {option.icon} {option.label}
                     </motion.button>
@@ -339,11 +381,10 @@ export default function DeckDetailPage() {
                         setFilterBy(option.value as FilterOption);
                         setIsFilterOpen(false);
                       }}
-                      className={`w-full text-left px-4 py-2 text-sm flex items-center gap-2 ${
-                        filterBy === option.value
-                          ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300'
-                          : 'text-gray-700 dark:text-gray-300'
-                      }`}
+                      className={`w-full text-left px-4 py-2 text-sm flex items-center gap-2 ${filterBy === option.value
+                        ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300'
+                        : 'text-gray-700 dark:text-gray-300'
+                        }`}
                     >
                       {option.icon && <span className="opacity-70 mr-2">{option.icon}</span>} {option.label}
                     </motion.button>
@@ -360,6 +401,7 @@ export default function DeckDetailPage() {
         layout
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
       >
+        <AnimatePresence>
           {sortedCards.map((card: any) => (
             <motion.div
               key={card.id}
@@ -415,6 +457,7 @@ export default function DeckDetailPage() {
               </div>
             </motion.div>
           ))}
+        </AnimatePresence>
 
         {/* Add New Card Card */}
         <motion.div
@@ -509,4 +552,4 @@ export default function DeckDetailPage() {
       />
     </div>
   );
-} 
+}

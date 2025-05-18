@@ -353,7 +353,7 @@ export default function DecksPage() {
             <AnimatePresence>
               {filteredAndSortedDecks.map((deck, index) => (
                 <motion.div
-                  key={deck.id}
+                key={deck.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
@@ -406,7 +406,7 @@ export default function DecksPage() {
                         >
                           <Trash2 className="w-4 h-4" />
                         </motion.button>
-                      </div>
+                  </div>
                 </motion.div>
             ))}
             </AnimatePresence>
