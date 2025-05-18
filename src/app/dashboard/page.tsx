@@ -748,7 +748,7 @@ export default function DashboardPage() {
           >
             <div className="w-24 h-24 mx-auto mb-4 relative">
               <Image
-                src="/studying.svg"
+                src="/dark.png"
                 alt="No data"
                 fill
                 className="object-contain opacity-50"

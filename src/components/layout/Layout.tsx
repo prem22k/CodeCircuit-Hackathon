@@ -2,7 +2,6 @@
 
 import { ReactNode } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Header } from './Header';
 import { Loader2 } from 'lucide-react';
 
 interface LayoutProps {
@@ -22,7 +21,8 @@ export function Layout({ children }: LayoutProps) {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header />
+      {/* Removed Header to avoid duplication on pages with their own headers */}
+      {/* <Header /> */}
       <main className="flex-1 container py-8">
         {children}
       </main>
