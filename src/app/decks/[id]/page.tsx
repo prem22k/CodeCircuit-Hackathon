@@ -148,8 +148,12 @@ export default function DeckDetailPage() {
     return null;
   }
 
+  console.log("Rendering main component body with deck:", deck, "and cards:", cards);
   return (
     <div className="space-y-8 min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-6 lg:p-8">
+      {/* Debugging message */}
+      <div className="text-center text-red-500">DEBUG: Main render block reached. Deck: {deck?.title || 'Loading...'}, Cards: {cards?.length || 0}</div>
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
         <div className="flex items-center gap-4">
