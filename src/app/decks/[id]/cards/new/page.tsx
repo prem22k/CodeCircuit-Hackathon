@@ -189,7 +189,7 @@ export default function NewCardPage() {
             </div>
 
             {/* Back */}
-            <div className="absolute w-full h-full backface-hidden rounded-xl p-8 md:p-12 flex items-center justify-center text-center bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700" style={{ transform: 'rotateY(180deg)' }}>
+            <div className="absolute w-full h-full backface-hidden rounded-xl p-8 md:p-12 flex items-center justify-center text-center bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700 bg-blue-200 dark:bg-blue-700" style={{ transform: 'rotateY(180deg)' }}>
               <p className="text-2xl md:text-3xl font-semibold text-gray-900 dark:text-white">{back || 'Back of card'}</p>
             </div>
           </motion.div>

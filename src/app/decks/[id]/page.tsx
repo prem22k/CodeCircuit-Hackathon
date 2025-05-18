@@ -148,6 +148,13 @@ export default function DeckDetailPage() {
     return null;
   }
 
+  console.log("Debug Render - Query/Filter/Sort States:", {
+    searchQuery,
+    filterBy,
+    cardsLength: cards.length,
+    filteredCardsLength: filteredCards.length,
+    sortedCardsLength: sortedCards.length,
+  });
   console.log("Rendering main component body with deck:", deck, "and cards:", cards);
   return (
     <div className="space-y-8 min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-6 lg:p-8">
