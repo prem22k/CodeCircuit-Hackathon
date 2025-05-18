@@ -426,7 +426,6 @@ export default function DeckDetailPage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
           transition={{ duration: 0.4, delay: filteredCards.length * 0.05 }}
           className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:shadow-xl transition-shadow group"
           onClick={() => router.push(`/decks/${deckId}/cards/new`)}
