@@ -79,8 +79,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signInWithGoogle = useCallback(async () => {
     try {
       const result = await signInWithPopup(auth, googleProvider);
-      // Check if this is a new user
-      const isNewUser = result.additionalUserInfo?.isNewUser;
+      // Check if this is a new user by checking if the user was just created
+      const isNewUser = result.user.metadata.creationTime === result.user.metadata.lastSignInTime;
       if (isNewUser) {
         localStorage.removeItem('hasSeenTutorial');
       }
