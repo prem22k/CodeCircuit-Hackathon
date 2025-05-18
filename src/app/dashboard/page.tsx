@@ -6,13 +6,13 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useDecks } from '@/hooks/useDecks';
 import { useReviewHistory } from '@/hooks/useReviewHistory';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
   ResponsiveContainer,
   LineChart,
   Line,
@@ -20,11 +20,11 @@ import {
   Pie,
   Cell
 } from 'recharts';
-import { 
-  Calendar, 
-  BookOpen, 
-  CheckCircle, 
-  Clock, 
+import {
+  Calendar,
+  BookOpen,
+  CheckCircle,
+  Clock,
   TrendingUp,
   ArrowRight,
   Brain,
@@ -60,7 +60,39 @@ interface Deck {
   averagePerformance?: number;
 }
 
-const COLORS = ['#000000', '#333333', '#666666', '#999999'];
+const COLORS = ['#10B981', '#3B82F6', '#6B7280'];
+
+// Add missing getColor function for the calendar heatmap
+function getColor(intensity: number): string {
+  const colors = [
+    'bg-gray-100 dark:bg-gray-800',
+    'bg-gray-200 dark:bg-gray-700',
+    'bg-gray-300 dark:bg-gray-600',
+    'bg-gray-400 dark:bg-gray-500'
+  ];
+  return colors[intensity] || colors[0];
+}
+
+// Add missing getReviewProgress function
+function getReviewProgress(cards: any[]): {
+  mastered: number;
+  learning: number;
+  new: number;
+} {
+  return cards.reduce(
+    (acc, card) => {
+      if (card.box >= 4) {
+        acc.mastered++;
+      } else if (card.box > 0) {
+        acc.learning++;
+      } else {
+        acc.new++;
+      }
+      return acc;
+    },
+    { mastered: 0, learning: 0, new: 0 }
+  );
+}
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -70,7 +102,10 @@ export default function DashboardPage() {
     totalCards: 0,
     totalReviews: 0,
     averagePerformance: 0,
-    reviewStreak: 0
+    reviewStreak: 0,
+    mastered: 0,
+    learning: 0,
+    new: 0
   });
   const { dailyStats, streak, loading: historyLoading } = useReviewHistory('all');
   const [lastReviewDate, setLastReviewDate] = useState<Date | null>(null);
@@ -88,11 +123,16 @@ export default function DashboardPage() {
       const totalReviews = decks.reduce((sum, deck) => sum + (deck.reviewCount || 0), 0);
       const averagePerformance = decks.reduce((sum, deck) => sum + (deck.averagePerformance || 0), 0) / (decks.length || 1);
 
+      // Calculate review progress
+      const allCards = decks.flatMap(deck => deck.cards || []);
+      const progress = getReviewProgress(allCards);
+
       setStats({
         totalCards,
         totalReviews,
         averagePerformance,
-        reviewStreak: streak
+        reviewStreak: streak,
+        ...progress
       });
     }
   }, [decks, streak]);
@@ -118,16 +158,18 @@ export default function DashboardPage() {
     );
   }
 
+  // Update the performance data calculation
   const performanceData = [
-    { name: 'Known', value: stats.averagePerformance },
-    { name: 'To Learn', value: 100 - stats.averagePerformance }
+    { name: 'Mastered', value: stats.mastered },
+    { name: 'Learning', value: stats.learning },
+    { name: 'New', value: stats.new }
   ];
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="flex justify-between items-center mb-8 bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700"
@@ -162,7 +204,7 @@ export default function DashboardPage() {
               <Target className="w-5 h-5" />
               <span>Review</span>
             </motion.button>
-            
+
             {/* Profile Dropdown */}
             <div className="relative profile-dropdown">
               <motion.button
@@ -199,7 +241,7 @@ export default function DashboardPage() {
                       <p className="text-sm font-medium text-gray-900 dark:text-white">{user?.displayName || 'User'}</p>
                       <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{user?.email}</p>
                     </div>
-                    
+
                     <div className="py-1">
                       <motion.button
                         whileHover={{ x: 4 }}
@@ -212,7 +254,7 @@ export default function DashboardPage() {
                         <User className="w-4 h-4" />
                         <span>View Profile</span>
                       </motion.button>
-                      
+
                       <motion.button
                         whileHover={{ x: 4 }}
                         onClick={() => {
@@ -224,7 +266,7 @@ export default function DashboardPage() {
                         <Edit className="w-4 h-4" />
                         <span>Edit Profile</span>
                       </motion.button>
-                      
+
                       <motion.button
                         whileHover={{ x: 4 }}
                         onClick={() => {
@@ -237,9 +279,9 @@ export default function DashboardPage() {
                         <span>Settings</span>
                       </motion.button>
                     </div>
-                    
+
                     <div className="border-t border-gray-100 dark:border-gray-700 my-1" />
-                    
+
                     <motion.button
                       whileHover={{ x: 4 }}
                       onClick={() => {
@@ -335,6 +377,27 @@ export default function DashboardPage() {
               </div>
               <div className="p-3 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 rounded-lg">
                 <Flame className="w-6 h-6 text-black dark:text-white" />
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Add new stats card for mastery */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            whileHover={{ y: -5 }}
+            className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-all"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Mastery Rate</p>
+                <h3 className="text-3xl font-bold bg-gradient-to-r from-black to-gray-600 dark:from-white dark:to-gray-400 bg-clip-text text-transparent">
+                  {stats.totalCards > 0 ? ((stats.mastered / stats.totalCards) * 100).toFixed(1) : 0}%
+                </h3>
+              </div>
+              <div className="p-3 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 rounded-lg">
+                <Sparkles className="w-6 h-6 text-black dark:text-white" />
               </div>
             </div>
           </motion.div>
@@ -513,18 +576,20 @@ export default function DashboardPage() {
                     paddingAngle={5}
                     dataKey="value"
                     animationDuration={1000}
+                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                   >
                     {performanceData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip 
-                    contentStyle={{ 
+                  <Tooltip
+                    contentStyle={{
                       backgroundColor: 'white',
                       border: '1px solid #e5e7eb',
                       borderRadius: '0.5rem',
                       boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
                     }}
+                    formatter={(value: number) => [`${value} cards`, '']}
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -535,14 +600,14 @@ export default function DashboardPage() {
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={dailyStats}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                  <XAxis 
-                    dataKey="date" 
+                  <XAxis
+                    dataKey="date"
                     tickFormatter={(date) => new Date(date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                     stroke="#6b7280"
                   />
                   <YAxis stroke="#6b7280" />
-                  <Tooltip 
-                    contentStyle={{ 
+                  <Tooltip
+                    contentStyle={{
                       backgroundColor: 'white',
                       border: '1px solid #e5e7eb',
                       borderRadius: '0.5rem',
@@ -550,19 +615,19 @@ export default function DashboardPage() {
                     }}
                     labelFormatter={(date) => new Date(date).toLocaleDateString()}
                   />
-                  <Line 
-                    type="monotone" 
-                    dataKey="reviews" 
-                    stroke="#3b82f6" 
+                  <Line
+                    type="monotone"
+                    dataKey="reviews"
+                    stroke="#3b82f6"
                     strokeWidth={2}
                     dot={{ fill: '#3b82f6', strokeWidth: 2 }}
                     activeDot={{ r: 6, fill: '#3b82f6' }}
                     name="Reviews"
                   />
-                  <Line 
-                    type="monotone" 
-                    dataKey="averagePerformance" 
-                    stroke="#10b981" 
+                  <Line
+                    type="monotone"
+                    dataKey="averagePerformance"
+                    stroke="#10b981"
                     strokeWidth={2}
                     dot={{ fill: '#10b981', strokeWidth: 2 }}
                     activeDot={{ r: 6, fill: '#10b981' }}
@@ -595,7 +660,7 @@ export default function DashboardPage() {
                 {stats.averagePerformance.toFixed(1)}%
               </div>
               <div className="mt-2 h-2 bg-gray-200 dark:bg-gray-600 rounded-full overflow-hidden">
-                <div 
+                <div
                   className="h-full bg-green-500 rounded-full transition-all duration-500"
                   style={{ width: `${stats.averagePerformance}%` }}
                 />
@@ -627,14 +692,14 @@ export default function DashboardPage() {
               {decks && decks.length > 0 ? (
                 <>
                   <div className="text-lg font-bold text-yellow-600 dark:text-yellow-400">
-                    {decks.reduce((best, deck) => 
+                    {decks.reduce((best, deck) =>
                       ((deck.averagePerformance || 0) > (best.averagePerformance || 0)) ? deck : best
-                    , decks[0]).title}
+                      , decks[0]).title}
                   </div>
                   <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                    {decks.reduce((best, deck) => 
+                    {decks.reduce((best, deck) =>
                       ((deck.averagePerformance || 0) > (best.averagePerformance || 0)) ? deck : best
-                    , decks[0]).averagePerformance?.toFixed(1) || '0'}% success rate
+                      , decks[0]).averagePerformance?.toFixed(1) || '0'}% success rate
                   </div>
                 </>
               ) : (
@@ -668,7 +733,7 @@ export default function DashboardPage() {
               <span>More</span>
             </div>
           </div>
-          <CalendarHeatmap 
+          <CalendarHeatmap
             data={dailyStats.map(stat => ({
               date: new Date(stat.date).toISOString(),
               value: stat.reviews
@@ -723,15 +788,4 @@ export default function DashboardPage() {
       </div>
     </div>
   );
-}
-
-// Helper function for heatmap colors
-function getColor(intensity: number) {
-  const colors = [
-    'bg-gray-100 dark:bg-gray-800',
-    'bg-blue-100 dark:bg-blue-900',
-    'bg-blue-200 dark:bg-blue-800',
-    'bg-blue-300 dark:bg-blue-700'
-  ];
-  return colors[intensity] || colors[0];
 } 
