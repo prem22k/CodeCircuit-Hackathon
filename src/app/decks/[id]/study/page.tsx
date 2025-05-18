@@ -5,9 +5,9 @@ import { useParams, useRouter } from 'next/navigation';
 import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
-import { 
-  ArrowLeft, 
-  CheckCircle2, 
+import {
+  ArrowLeft,
+  CheckCircle2,
   XCircle,
   RotateCcw,
   Brain,
@@ -20,6 +20,7 @@ import { toast } from 'sonner';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import Image from 'next/image';
 import { useTheme } from 'next-themes';
+import { addDays } from 'date-fns';
 
 interface Card {
   id: string;
@@ -67,10 +68,10 @@ export default function StudyPage() {
 
     // Ensure deckId is a string before fetching
     if (typeof deckId !== 'string') {
-        setLoading(false);
-        toast.error('Invalid deck ID.');
-        router.push('/decks'); // Redirect to decks list
-        return;
+      setLoading(false);
+      toast.error('Invalid deck ID.');
+      router.push('/decks'); // Redirect to decks list
+      return;
     }
 
     const deckRef = doc(db, `users/${user.id}/decks/${deckId}`);
@@ -78,7 +79,7 @@ export default function StudyPage() {
       if (doc.exists()) {
         const deckData = { id: doc.id, ...doc.data() } as Deck;
         setDeck(deckData);
-        
+
         // Filter cards that are due for review
         const now = new Date();
         const dueCards = deckData.cards?.filter((card: Card) => {
@@ -91,6 +92,7 @@ export default function StudyPage() {
         // Shuffle cards
         const shuffledCards = [...dueCards].sort(() => Math.random() - 0.5);
         setCards(shuffledCards);
+        setCurrentCardIndex(0);
         setSessionStats(prev => ({
           ...prev,
           total: shuffledCards.length,
@@ -117,91 +119,97 @@ export default function StudyPage() {
     setTimeout(() => setIsAnimating(false), 300);
   };
 
-  const updateCardDifficulty = async (difficulty: number) => {
-    if (!user || !deck || !cards[currentCardIndex] || typeof deckId !== 'string') return; // Added deckId check here too
+  const updateCardDifficulty = async (cardId: string, difficulty: number) => {
+    if (!user || !deck || !cards || cards.length === 0 || currentCardIndex >= cards.length || typeof deckId !== 'string') {
+      console.error('updateCardDifficulty: Pre-condition check failed', { user, deck, cards, currentCardIndex, deckId });
+      setSaving(false);
+      return;
+    }
 
-    const card = cards[currentCardIndex];
+    const card = cards.find(c => c.id === cardId);
+
+    if (!card) {
+      console.error('updateCardDifficulty: Card not found in current session cards', { cardId, currentCardIndex, cards });
+      setSaving(false);
+      return;
+    }
+
     const now = new Date();
     let nextReviewDate = new Date();
 
-    // Calculate next review date based on difficulty (spaced repetition)
     switch (difficulty) {
       case 1: // Hard
-        nextReviewDate.setDate(now.getDate() + 1);
+        nextReviewDate = addDays(now, 1);
         break;
       case 2: // Good
-        nextReviewDate.setDate(now.getDate() + 3);
+        nextReviewDate = addDays(now, 3);
         break;
       case 3: // Easy
-        nextReviewDate.setDate(now.getDate() + 7);
+        nextReviewDate = addDays(now, 7);
         break;
       default:
-        nextReviewDate.setDate(now.getDate() + 1);
+        nextReviewDate = addDays(now, 1);
     }
 
-    setSaving(true); // Indicate saving is in progress
+    setSaving(true);
 
     try {
       const deckRef = doc(db, `users/${user.id}/decks/${deckId}`);
-      // To avoid potential issues with arrayUnion and updating existing cards, 
-      // a safer approach would be to fetch the deck's cards, find the specific card, 
-      // update it, and then update the entire cards array. 
-      // However, given the current structure, we'll proceed with a modified update.
 
-      // Find the index of the card to update
-      const cardIndexToUpdate = deck.cards.findIndex((c: any) => c.id === card.id);
+      const originalCardIndex = deck.cards.findIndex((c: any) => c.id === card.id);
 
-      if (cardIndexToUpdate > -1) {
+      if (originalCardIndex > -1) {
         const updatedCards = [...deck.cards];
-        updatedCards[cardIndexToUpdate] = {
-          ...updatedCards[cardIndexToUpdate],
+
+        const originalCard = updatedCards[originalCardIndex];
+        if (!originalCard) {
+          console.error('updateCardDifficulty: Original card not found in updatedCards array', { cardId: card.id, originalCardIndex });
+          toast.error('Failed to update card: Original card data missing.');
+          setSaving(false);
+          return;
+        }
+
+        updatedCards[originalCardIndex] = {
+          ...originalCard,
           difficulty: difficulty,
           lastReviewed: now,
           nextReview: nextReviewDate,
-          // Ensure other properties are carried over if the type is 'any'
-          front: card.front, // Assuming front and back are always present
-          back: card.back,
-           // Copy other potential fields if necessary
         };
 
-         // Update the entire cards array for simplicity in this iteration
         await updateDoc(deckRef, {
           cards: updatedCards,
           reviewCount: (deck.reviewCount || 0) + 1
         });
 
       } else {
-           console.error('Card not found in deck for update:', card.id);
-           toast.error('Failed to update card: Card not found in deck.');
-            setSaving(false);
-           return;
+        console.error('Card not found in deck.cards array for update:', card.id);
+        toast.error('Failed to update card: Card not found in deck data.');
       }
 
       setSessionStats(prev => ({
         ...prev,
-        correct: difficulty > 1 ? prev.correct + 1 : prev.correct, // Count correct if not 'Hard'
-        incorrect: difficulty === 1 ? prev.incorrect + 1 : prev.incorrect, // Count incorrect if 'Hard'
-        remaining: prev.remaining > 0 ? prev.remaining - 1 : 0 // Prevent negative remaining count
+        correct: difficulty > 1 ? prev.correct + 1 : prev.correct,
+        incorrect: difficulty === 1 ? prev.incorrect + 1 : prev.incorrect,
+        remaining: prev.remaining > 0 ? prev.remaining - 1 : 0
       }));
 
       toast.success('Card updated!');
 
-      // Move to next card after a slight delay to allow stat update visibility
       setTimeout(() => {
         if (currentCardIndex < cards.length - 1) {
           setCurrentCardIndex(prev => prev + 1);
           setIsFlipped(false);
         } else {
-          // Session complete
           toast.success('Study session complete!');
           router.push(`/decks/${deckId}`);
         }
-      }, 500); // Increased delay slightly
+        setSaving(false);
+      }, 500);
 
     } catch (error) {
       console.error('Error updating card:', error);
       toast.error('Failed to update card');
-       setSaving(false);
+      setSaving(false);
     }
   };
 
@@ -214,8 +222,6 @@ export default function StudyPage() {
   }
 
   if (!deck || cards.length === 0) {
-    // This case is handled by the redirect in useEffect if deckId is invalid or not found
-    // The no cards due message is also handled here
     return (
       <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 max-w-md mx-auto">
         <div className="w-32 h-32 mx-auto mb-6 relative opacity-70">
@@ -278,68 +284,78 @@ export default function StudyPage() {
         </div>
       </div>
 
-      {/* Flashcard */}
-      <div className="relative h-[400px] perspective-1000">
-        <motion.div
-          className="w-full h-full relative preserve-3d cursor-pointer rounded-xl"
-          animate={{ rotateY: isFlipped ? 180 : 0 }}
-          transition={{ duration: 0.5, ease: "easeInOut" }}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={handleFlip}
-        >
-          {/* Front */}
-          <div className="absolute w-full h-full backface-hidden rounded-xl p-8 md:p-12 flex items-center justify-center text-center bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700">
-            <p className="text-2xl md:text-3xl font-semibold text-gray-900 dark:text-white">{currentCard.front}</p>
-          </div>
+      {/* Card Display */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex items-center justify-center min-h-[400px]"
+      >
+        {currentCard ? (
+          <motion.div
+            key={currentCard.id}
+            initial={{ rotateY: isFlipped ? 180 : 0 }}
+            animate={{ rotateY: isFlipped ? 180 : 0 }}
+            transition={{ duration: 0.3 }}
+            onAnimationComplete={() => setIsAnimating(false)}
+            className="relative w-full max-w-md h-[350px] bg-white dark:bg-gray-800 rounded-xl shadow-lg cursor-pointer perspective-1000"
+            onClick={handleFlip}
+            style={{ transformStyle: 'preserve-3d' }}
+          >
+            {/* Front of Card */}
+            <div className="absolute inset-0 flex items-center justify-center p-6 backface-hidden">
+              <p className="text-xl font-semibold text-center text-gray-900 dark:text-white break-words">{currentCard.front}</p>
+            </div>
 
-          {/* Back */}
-          <div className="absolute w-full h-full backface-hidden rounded-xl p-8 md:p-12 flex items-center justify-center text-center bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700" style={{ transform: 'rotateY(180deg)' }}>
-            <p className="text-2xl md:text-3xl font-semibold text-gray-900 dark:text-white">{currentCard.back}</p>
-          </div>
-        </motion.div>
-      </div>
+            {/* Back of Card */}
+            <div className="absolute inset-0 flex items-center justify-center p-6 backface-hidden rotate-y-180">
+              <p className="text-xl text-center text-gray-700 dark:text-gray-300 break-words">{currentCard.back}</p>
+            </div>
+          </motion.div>
+        ) : (
+          <LoadingSpinner className="w-12 h-12" />
+        )}
+      </motion.div>
 
-      {/* Controls */}
-      <div className="flex justify-center gap-4 mt-6">
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => updateCardDifficulty(1)}
-          className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl shadow-md transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          disabled={!isFlipped || saving} // Disable while saving
-        >
-           {saving && !isFlipped ? <LoadingSpinner className="w-5 h-5" /> : <XCircle className="w-5 h-5" />}
-          Hard
-        </motion.button>
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => updateCardDifficulty(2)}
-          className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl shadow-md transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          disabled={!isFlipped || saving} // Disable while saving
-        >
-           {saving && !isFlipped ? <LoadingSpinner className="w-5 h-5" /> : <CheckCircle2 className="w-5 h-5" />}
-          Good
-        </motion.button>
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => updateCardDifficulty(3)}
-          className="px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl shadow-md transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          disabled={!isFlipped || saving} // Disable while saving
-        >
-           {saving && !isFlipped ? <LoadingSpinner className="w-5 h-5" /> : <Target className="w-5 h-5" />}
-          Easy
-        </motion.button>
-      </div>
+      {/* Action Buttons */}
+      {currentCard && (
+        <div className="flex justify-center gap-4 mt-6">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => updateCardDifficulty(currentCard.id, 1)}
+            className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl shadow-md transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={!isFlipped || saving}
+          >
+            {saving && !isFlipped ? <LoadingSpinner className="w-5 h-5" /> : <XCircle className="w-5 h-5" />}
+            Hard
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => updateCardDifficulty(currentCard.id, 2)}
+            className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl shadow-md transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={!isFlipped || saving}
+          >
+            {saving && !isFlipped ? <LoadingSpinner className="w-5 h-5" /> : <CheckCircle2 className="w-5 h-5" />}
+            Good
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => updateCardDifficulty(currentCard.id, 3)}
+            className="px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl shadow-md transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={!isFlipped || saving}
+          >
+            {saving && !isFlipped ? <LoadingSpinner className="w-5 h-5" /> : <Target className="w-5 h-5" />}
+            Easy
+          </motion.button>
+        </div>
+      )}
 
       {/* Progress */}
-      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-8">
-        <div
-          className="bg-indigo-500 h-2 rounded-full transition-all duration-300"
-          style={{ width: `${((currentCardIndex + 1) / cards.length) * 100}%` }}
-        />
+      <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400 mt-8">
+        <span>Progress: {sessionStats.total - sessionStats.remaining} / {sessionStats.total}</span>
+        <span>Remaining: {sessionStats.remaining}</span>
       </div>
     </div>
   );
