@@ -3,11 +3,11 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { 
-  Plus, 
-  Pencil, 
-  Trash2, 
-  BookOpen, 
+import {
+  Plus,
+  Pencil,
+  Trash2,
+  BookOpen,
   Search,
   Filter,
   SortAsc,
@@ -24,7 +24,7 @@ import { Deck } from '@/types';
 import { Dialog } from '@headlessui/react';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { useAuth } from '@/contexts/AuthContext';
-import { toast } from 'sonner';
+import { useToast } from '@/components/common/Toast';
 import Tutorial from '@/components/Tutorial';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
@@ -40,6 +40,7 @@ export default function DecksPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const { theme } = useTheme();
+  const { showToast } = useToast();
   const [decks, setDecks] = useState<Deck[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -72,7 +73,7 @@ export default function DecksPage() {
       }
     } catch (error) {
       console.error('Error loading decks:', error);
-      toast.error('Failed to load decks');
+      showToast('error', 'Failed to load decks');
     } finally {
       setLoading(false);
     }
@@ -80,7 +81,7 @@ export default function DecksPage() {
 
   const handleCreateDeck = async () => {
     if (!newDeckTitle.trim()) {
-      toast.error('Please enter a deck title');
+      showToast('error', 'Please enter a deck title');
       return;
     }
 
@@ -94,16 +95,16 @@ export default function DecksPage() {
       setIsCreateModalOpen(false);
       setNewDeckTitle('');
       setNewDeckDescription('');
-      toast.success('Deck created successfully!');
+      showToast('success', 'Deck created successfully!');
     } catch (error) {
       console.error('Error creating deck:', error);
-      toast.error('Failed to create deck');
+      showToast('error', 'Failed to create deck');
     }
   };
 
   const handleEditDeck = async () => {
     if (!selectedDeck || !newDeckTitle.trim()) {
-      toast.error('Please enter a deck title');
+      showToast('error', 'Please enter a deck title');
       return;
     }
 
@@ -113,7 +114,7 @@ export default function DecksPage() {
         description: newDeckDescription,
       });
 
-      setDecks(decks.map(deck => 
+      setDecks(decks.map(deck =>
         deck.id === selectedDeck.id ? {
           ...deck,
           title: newDeckTitle,
@@ -121,15 +122,15 @@ export default function DecksPage() {
           updatedAt: new Date(),
         } : deck
       ));
-      
+
       setIsEditModalOpen(false);
       setSelectedDeck(null);
       setNewDeckTitle('');
       setNewDeckDescription('');
-      toast.success('Deck updated successfully!');
+      showToast('success', 'Deck updated successfully!');
     } catch (error) {
       console.error('Error updating deck:', error);
-      toast.error('Failed to update deck');
+      showToast('error', 'Failed to update deck');
     }
   };
 
@@ -139,10 +140,10 @@ export default function DecksPage() {
     try {
       await deleteDeck(user!.id, deckId);
       setDecks(decks.filter(deck => deck.id !== deckId));
-      toast.success('Deck deleted successfully!');
+      showToast('success', 'Deck deleted successfully!');
     } catch (error) {
       console.error('Error deleting deck:', error);
-      toast.error('Failed to delete deck');
+      showToast('error', 'Failed to delete deck');
     }
   };
 
@@ -154,10 +155,10 @@ export default function DecksPage() {
   const filteredAndSortedDecks = decks
     .filter(deck => {
       const matchesSearch = deck.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          deck.description.toLowerCase().includes(searchQuery.toLowerCase());
+        deck.description.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesFilter = filterBy === 'all' ? true :
-                          filterBy === 'recent' ? (new Date().getTime() - new Date(deck.updatedAt).getTime()) < 7 * 24 * 60 * 60 * 1000 :
-                          deck.cards.length === 0;
+        filterBy === 'recent' ? (new Date().getTime() - new Date(deck.updatedAt).getTime()) < 7 * 24 * 60 * 60 * 1000 :
+          deck.cards.length === 0;
       return matchesSearch && matchesFilter;
     })
     .sort((a, b) => {
@@ -191,9 +192,9 @@ export default function DecksPage() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {showTutorial && <Tutorial onComplete={handleTutorialComplete} />}
-        
+
         {/* Header */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="flex justify-between items-center mb-8 bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700"
@@ -230,10 +231,10 @@ export default function DecksPage() {
         <div className="mb-8 flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search decks..."
               className="w-full pl-10 pr-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 transition-all duration-300"
             />
@@ -264,11 +265,10 @@ export default function DecksPage() {
                           setSortBy(option as SortOption);
                           setIsSortOpen(false);
                         }}
-                        className={`w-full px-4 py-2 text-left text-sm ${
-                          sortBy === option
-                            ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400'
-                            : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
-                        }`}
+                        className={`w-full px-4 py-2 text-left text-sm ${sortBy === option
+                          ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400'
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                          }`}
                       >
                         {option.charAt(0).toUpperCase() + option.slice(1)}
                       </button>
@@ -302,11 +302,10 @@ export default function DecksPage() {
                           setFilterBy(option as FilterOption);
                           setIsFilterOpen(false);
                         }}
-                        className={`w-full px-4 py-2 text-left text-sm ${
-                          filterBy === option
-                            ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400'
-                            : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
-                        }`}
+                        className={`w-full px-4 py-2 text-left text-sm ${filterBy === option
+                          ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400'
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                          }`}
                       >
                         {option.charAt(0).toUpperCase() + option.slice(1)}
                       </button>
@@ -331,7 +330,7 @@ export default function DecksPage() {
                 fill
                 className="object-contain opacity-50"
               />
-          </div>
+            </div>
             <h3 className="text-2xl font-semibold mb-3 text-gray-900 dark:text-white">
               {searchQuery ? 'No matching decks found' : 'No decks yet'}
             </h3>
@@ -353,13 +352,13 @@ export default function DecksPage() {
             <AnimatePresence>
               {filteredAndSortedDecks.map((deck, index) => (
                 <motion.div
-                key={deck.id}
+                  key={deck.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
                   transition={{ delay: index * 0.05, duration: 0.4 }}
                   className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col"
-              >
+                >
                   <Link href={`/decks/${deck.id}`} className="flex flex-col p-6 flex-grow group">
                     <div className="flex justify-between items-start mb-4">
                       <h3 className="text-xl font-semibold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors leading-tight pr-4">
@@ -368,8 +367,8 @@ export default function DecksPage() {
                       {/* Edit and Delete buttons moved outside the Link */}
                     </div>
                     <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-3 flex-grow">
-                  {deck.description || 'No description provided.'}
-                </p>
+                      {deck.description || 'No description provided.'}
+                    </p>
                     <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 mt-auto">
                       <div className="flex items-center space-x-4">
                         <div className="flex items-center">
@@ -380,35 +379,35 @@ export default function DecksPage() {
                           <Clock className="w-4 h-4 mr-1.5" />
                           Updated {new Date(deck.updatedAt).toLocaleDateString()}
                         </div>
-                </div>
-                     
+                      </div>
+
                     </div>
                   </Link>
-                   <div className="flex justify-end gap-1 p-4 border-t border-gray-100 dark:border-gray-700">
-                        <motion.button
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
-                          onClick={() => {
-                            setSelectedDeck(deck);
-                            setNewDeckTitle(deck.title);
-                            setNewDeckDescription(deck.description);
-                            setIsEditModalOpen(true);
-                          }}
-                          className="p-2 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
-                        >
-                          <Pencil className="w-4 h-4" />
-                        </motion.button>
-                        <motion.button
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
-                          onClick={() => handleDeleteDeck(deck.id)}
-                          className="p-2 text-gray-400 hover:text-red-500 transition-colors"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </motion.button>
+                  <div className="flex justify-end gap-1 p-4 border-t border-gray-100 dark:border-gray-700">
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => {
+                        setSelectedDeck(deck);
+                        setNewDeckTitle(deck.title);
+                        setNewDeckDescription(deck.description);
+                        setIsEditModalOpen(true);
+                      }}
+                      className="p-2 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => handleDeleteDeck(deck.id)}
+                      className="p-2 text-gray-400 hover:text-red-500 transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </motion.button>
                   </div>
                 </motion.div>
-            ))}
+              ))}
             </AnimatePresence>
           </div>
         )}

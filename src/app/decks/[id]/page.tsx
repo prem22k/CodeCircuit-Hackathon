@@ -17,8 +17,7 @@ import {
   Search,
   Filter,
   SortAsc,
-  SortDesc,
-  ChevronDown
+  SortDesc
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
@@ -29,38 +28,18 @@ import Image from 'next/image';
 import { useTheme } from 'next-themes';
 import Link from 'next/link';
 
-interface Card {
-  id: string;
-  front: string;
-  back: string;
-  difficulty: number;
-  createdAt: {
-    seconds: number;
-  };
-}
-
-interface Deck {
-  id: string;
-  title: string;
-  cards: Card[];
-  reviewCount: number;
-  averagePerformance: number;
-}
-
 type SortOption = 'newest' | 'oldest' | 'difficulty';
 type FilterOption = 'all' | 'mastered' | 'learning' | 'not-started';
 
 export default function DeckDetailPage() {
   const params = useParams();
-  // Simplified parameter handling
-  const deckId = typeof params?.id === 'string' ? params.id :
-    Array.isArray(params?.id) ? params.id[0] : null;
+  const deckId = Array.isArray(params?.id) ? params.id[0] : params?.id;
 
   const router = useRouter();
   const { user } = useAuth();
   const { theme } = useTheme();
+  const [deck, setDeck] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [deck, setDeck] = useState<Deck | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('newest');
   const [filterBy, setFilterBy] = useState<FilterOption>('all');
@@ -69,88 +48,37 @@ export default function DeckDetailPage() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [cardToDelete, setCardToDelete] = useState<any>(null);
 
-  // Temporary debug flag
-  const [debugDisableCardRender, setDebugDisableCardRender] = useState(false);
-
   useEffect(() => {
-    // Added console logs for debugging
-    console.log("Effect running, user:", user?.id);
-    console.log("Effect running, deckId:", deckId);
-
-    if (!user || !user.id) {
-      console.log("No user found, redirecting to login");
+    if (!user) {
       router.push('/login');
       return;
     }
 
     // Ensure deckId is a string before fetching
-    if (!deckId) {
-      console.error('Invalid deck ID:', deckId);
+    if (typeof deckId !== 'string') {
       setLoading(false);
       toast.error('Invalid deck ID.');
       router.push('/decks'); // Redirect to decks list
       return;
     }
 
-    console.log("Attempting to fetch deck:", deckId, "for user:", user.id);
-
-    try {
-      const deckRef = doc(db, `users/${user.id}/decks/${deckId}`);
-      const unsubscribe = onSnapshot(
-        deckRef,
-        (doc) => {
-          console.log("Firestore snapshot received:", doc.exists() ? "Document exists" : "Document does not exist");
-          if (doc.exists()) {
-            const deckData = { id: doc.id, ...doc.data() } as Deck;
-            console.log("Deck data retrieved:", deckData.title);
-            setDeck(deckData);
-
-            // Detailed temporary log to inspect cards data structure and content
-            console.log("Type of deckData.cards:", typeof deckData.cards);
-            console.log("Is deckData.cards an Array:", Array.isArray(deckData.cards));
-            console.log("Length of deckData.cards:", deckData.cards?.length);
-            if (deckData.cards && deckData.cards.length > 0) {
-              console.log("Details of first item in deckData.cards:", deckData.cards[0]);
-              console.log("Type of first card ID in deckData.cards:", typeof deckData.cards[0].id);
-              console.log("Value of first card ID in deckData.cards:", deckData.cards[0].id);
-            }
-
-          } else {
-            console.error("Deck not found");
-            toast.error('Deck not found');
-            router.push('/decks');
-          }
-          setLoading(false);
-        },
-        (error) => {
-          console.error('Error fetching deck:', error);
-          toast.error(`Failed to load deck: ${error.message}`);
-          setLoading(false);
-          router.push('/decks');
-        }
-      );
-
-      return () => {
-        console.log("Cleaning up subscription");
-        unsubscribe();
-      };
-    } catch (err) {
-      console.error("Error setting up snapshot listener:", err);
-      toast.error(`Error setting up data listener: ${err instanceof Error ? err.message : 'Unknown error'}`);
+    const deckRef = doc(db, `users/${user.id}/decks/${deckId}`);
+    const unsubscribe = onSnapshot(deckRef, (doc) => {
+      if (doc.exists()) {
+        setDeck({ id: doc.id, ...doc.data() });
+      } else {
+        toast.error('Deck not found');
+        router.push('/decks');
+      }
       setLoading(false);
-      router.push('/decks');
-    }
-  }, [user, deckId, router]); // Added router to dependency array
-
-  // Debug output for component state
-  useEffect(() => {
-    console.log("Current component state:", {
-      loading,
-      deckId,
-      deckExists: !!deck,
-      cardsCount: deck?.cards?.length
+    }, (error) => {
+      console.error('Error fetching deck:', error);
+      toast.error('Failed to load deck');
+      setLoading(false);
     });
-  }, [loading, deckId, deck]);
+
+    return () => unsubscribe();
+  }, [user, deckId, router]);
 
   const filteredCards = deck?.cards?.filter((card: any) => {
     const matchesSearch = card.front.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -171,33 +99,15 @@ export default function DeckDetailPage() {
   const sortedCards = [...filteredCards].sort((a: any, b: any) => {
     switch (sortBy) {
       case 'newest':
-        return (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0);
+        return b.createdAt?.seconds - a.createdAt?.seconds;
       case 'oldest':
-        return (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0);
+        return a.createdAt?.seconds - b.createdAt?.seconds;
       case 'difficulty':
-        return (b.difficulty || 0) - (a.difficulty || 0);
+        return b.difficulty - a.difficulty;
       default:
         return 0;
     }
   });
-
-  // Temporary: Create a simplified cards array for debugging
-  const simplifiedCards = sortedCards.map(card => ({
-    id: card.id,
-    front: card.front,
-    back: card.back,
-  }));
-
-  // Temporary effect to inspect sortedCards when it changes
-  useEffect(() => {
-    console.log("sortedCards state updated:", sortedCards);
-    if (sortedCards && sortedCards.length > 0) {
-      console.log("Details of first card in sortedCards:", sortedCards[0]);
-      // You can add more detailed checks here if needed
-      // e.g., console.log("Type of first card ID:", typeof sortedCards[0].id);
-      // console.log("Value of first card ID:", sortedCards[0].id);
-    }
-  }, [sortedCards]); // Dependency array includes sortedCards
 
   if (loading) {
     return (
@@ -209,35 +119,20 @@ export default function DeckDetailPage() {
 
   if (!deck) {
     // This case is handled by the redirect in useEffect if deckId is invalid or not found
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[400px]">
-        <p className="text-gray-600 dark:text-gray-400 mb-4">Deck not found or still loading...</p>
-        <button
-          onClick={() => router.push('/decks')}
-          className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-        >
-          Return to Decks
-        </button>
-      </div>
-    );
+    return null;
   }
 
-  console.log("Rendering deck detail page with sortedCards:", sortedCards);
-
   return (
-    <div className="space-y-8 min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-6 lg:p-8">
-      {/* Rest of the component remains the same */}
+    <div className="space-y-6 min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-6 lg:p-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-700">
         <div className="flex items-center gap-4">
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+          <button
             onClick={() => router.push('/decks')}
             className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
           >
             <ArrowLeft className="w-6 h-6" />
-          </motion.button>
+          </button>
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{deck.title}</h1>
             <p className="text-gray-600 dark:text-gray-400">
@@ -249,8 +144,7 @@ export default function DeckDetailPage() {
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            // Temporarily disable onClick to debug
-            // onClick={() => router.push(`/decks/${deckId}/cards/new`)}
+            onClick={() => router.push(`/decks/${deckId}/cards/new`)}
             className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 flex items-center space-x-2"
           >
             <Plus className="w-5 h-5" />
@@ -259,8 +153,7 @@ export default function DeckDetailPage() {
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            // Temporarily disable onClick to debug
-            // onClick={() => router.push(`/decks/${deckId}/study`)}
+            onClick={() => router.push(`/decks/${deckId}/study`)}
             className="px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 flex items-center space-x-2"
           >
             <Brain className="w-5 h-5" />
@@ -289,40 +182,31 @@ export default function DeckDetailPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <motion.div
-          whileHover={{ y: -2 }}
-          className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm"
-        >
-          <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400 mb-2">
-            <BookOpen className="w-6 h-6" />
-            <span className="font-medium">Total Cards</span>
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 shadow-sm">
+          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 mb-1">
+            <BookOpen className="w-5 h-5" />
+            <span>Total Cards</span>
           </div>
-          <div className="text-3xl font-bold text-gray-900 dark:text-white">{deck.cards?.length || 0}</div>
-        </motion.div>
-        <motion.div
-          whileHover={{ y: -2 }}
-          className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm"
-        >
-          <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400 mb-2">
-            <Clock className="w-6 h-6" />
-            <span className="font-medium">Reviews</span>
+          <div className="text-2xl font-bold text-gray-900 dark:text-white">{deck.cards?.length || 0}</div>
+        </div>
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 shadow-sm">
+          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 mb-1">
+            <Clock className="w-5 h-5" />
+            <span>Reviews</span>
           </div>
-          <div className="text-3xl font-bold text-gray-900 dark:text-white">{deck.reviewCount || 0}</div>
-        </motion.div>
-        <motion.div
-          whileHover={{ y: -2 }}
-          className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm"
-        >
-          <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400 mb-2">
-            <Target className="w-6 h-6" />
-            <span className="font-medium">Mastery</span>
+          <div className="text-2xl font-bold text-gray-900 dark:text-white">{deck.reviewCount || 0}</div>
+        </div>
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 shadow-sm">
+          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 mb-1">
+            <Target className="w-5 h-5" />
+            <span>Mastery</span>
           </div>
-          <div className="text-3xl font-bold text-gray-900 dark:text-white">{deck.averagePerformance?.toFixed(1) || 0}%</div>
-        </motion.div>
+          <div className="text-2xl font-bold text-gray-900 dark:text-white">{deck.averagePerformance?.toFixed(1) || 0}%</div>
+        </div>
       </div>
 
       {/* Search and Filters */}
-      <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-center">
+      <div className="flex flex-col sm:flex-row gap-4 mt-8">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
           <input
@@ -330,53 +214,46 @@ export default function DeckDetailPage() {
             placeholder="Search cards..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 dark:bg-gray-800 dark:text-white transition-colors"
           />
         </div>
-        <div className="flex gap-2 flex-shrink-0">
+        <div className="flex gap-2">
           <div className="relative">
             <motion.button
-              whileHover={{ backgroundColor: theme === 'dark' ? '#374151' : '#F9FAFB' }}
-              whileTap={{ scale: 0.98 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => setIsSortOpen(!isSortOpen)}
-              className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300"
+              className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg flex items-center gap-2 hover:border-indigo-500 dark:hover:border-indigo-400 transition-all duration-300"
             >
-              {sortBy === 'newest' ? <SortDesc className="w-5 h-5" /> :
-                sortBy === 'oldest' ? <SortAsc className="w-5 h-5" /> :
-                  sortBy === 'difficulty' ? <Target className="w-5 h-5" /> : <SortDesc className="w-5 h-5" />}
-              Sort
-              <motion.div animate={{ rotate: isSortOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
-                <ChevronDown className="w-4 h-4" />
-              </motion.div>
+              {sortBy === 'newest' ? <SortDesc className="w-4 h-4 text-gray-600 dark:text-gray-300" /> : <SortAsc className="w-4 h-4 text-gray-600 dark:text-gray-300" />}
+              <span className="text-gray-700 dark:text-gray-300">Sort</span>
             </motion.button>
             <AnimatePresence>
               {isSortOpen && (
                 <motion.div
-                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
                   className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-10"
                 >
                   {[
-                    { value: 'newest', label: 'Newest First', icon: <SortDesc className="w-4 h-4" /> },
-                    { value: 'oldest', label: 'Oldest First', icon: <SortAsc className="w-4 h-4" /> },
-                    { value: 'difficulty', label: 'Difficulty', icon: <Target className="w-4 h-4" /> }
+                    { value: 'newest', label: 'Newest First' },
+                    { value: 'oldest', label: 'Oldest First' },
+                    { value: 'difficulty', label: 'Difficulty' }
                   ].map((option) => (
-                    <motion.button
+                    <button
                       key={option.value}
-                      whileHover={{ backgroundColor: theme === 'dark' ? '#374151' : '#F3F4F6' }}
                       onClick={() => {
                         setSortBy(option.value as SortOption);
                         setIsSortOpen(false);
                       }}
-                      className={`w-full text-left px-4 py-2 text-sm flex items-center gap-2 ${sortBy === option.value
-                        ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300'
-                        : 'text-gray-700 dark:text-gray-300'
+                      className={`w-full px-4 py-2 text-left text-sm ${sortBy === option.value
+                          ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400'
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                         }`}
                     >
-                      {option.icon} {option.label}
-                    </motion.button>
+                      {option.label}
+                    </button>
                   ))}
                 </motion.div>
               )}
@@ -384,46 +261,41 @@ export default function DeckDetailPage() {
           </div>
           <div className="relative">
             <motion.button
-              whileHover={{ backgroundColor: theme === 'dark' ? '#374151' : '#F9FAFB' }}
-              whileTap={{ scale: 0.98 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => setIsFilterOpen(!isFilterOpen)}
-              className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300"
+              className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg flex items-center gap-2 hover:border-indigo-500 dark:hover:border-indigo-400 transition-all duration-300"
             >
-              <Filter className="w-5 h-5" />
-              Filter
-              <motion.div animate={{ rotate: isFilterOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
-                <ChevronDown className="w-4 h-4" />
-              </motion.div>
+              <Filter className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+              <span className="text-gray-700 dark:text-gray-300">Filter</span>
             </motion.button>
             <AnimatePresence>
               {isFilterOpen && (
                 <motion.div
-                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
                   className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-10"
                 >
                   {[
                     { value: 'all', label: 'All Cards' },
-                    { value: 'mastered', label: 'Mastered', icon: <Target className="w-4 h-4" /> },
-                    { value: 'learning', label: 'Learning', icon: <Brain className="w-4 h-4" /> },
-                    { value: 'not-started', label: 'Not Started', icon: <Clock className="w-4 h-4" /> }
+                    { value: 'mastered', label: 'Mastered' },
+                    { value: 'learning', label: 'Learning' },
+                    { value: 'not-started', label: 'Not Started' }
                   ].map((option) => (
-                    <motion.button
+                    <button
                       key={option.value}
-                      whileHover={{ backgroundColor: theme === 'dark' ? '#374151' : '#F3F4F6' }}
                       onClick={() => {
                         setFilterBy(option.value as FilterOption);
                         setIsFilterOpen(false);
                       }}
-                      className={`w-full text-left px-4 py-2 text-sm flex items-center gap-2 ${filterBy === option.value
-                        ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300'
-                        : 'text-gray-700 dark:text-gray-300'
+                      className={`w-full px-4 py-2 text-left text-sm ${filterBy === option.value
+                          ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400'
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                         }`}
                     >
-                      {option.icon && <span className="opacity-70 mr-2">{option.icon}</span>} {option.label}
-                    </motion.button>
+                      {option.label}
+                    </button>
                   ))}
                 </motion.div>
               )}
@@ -433,31 +305,55 @@ export default function DeckDetailPage() {
       </div>
 
       {/* Cards Grid */}
-      <motion.div
-        layout
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-      >
-        {/* Temporarily comment out AnimatePresence */}
-        {/* <AnimatePresence> */}
-        {sortedCards.map((card: any) => {
-          if (!card || !card.id) {
-            console.error("Skipping rendering for card with missing or invalid ID:", card);
-            return null; // Skip rendering this card
-          }
-          console.log("Attempting to render card with ID:", card.id);
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
+        <AnimatePresence>
+          {sortedCards.map((card: any) => (
+            <motion.div
+              key={card.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
+              transition={{ duration: 0.4 }}
+              className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 flex flex-col"
+            >
+              <Link href={`/decks/${deckId}/cards/${card.id}/edit`} className="flex flex-col flex-grow group">
+                <div className="flex justify-between items-start mb-3">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white leading-tight pr-4">
+                    {card.front}
+                  </h3>
+                  {/* Edit and Delete buttons moved outside the Link */}
+                </div>
+                <p className="text-gray-600 dark:text-gray-400 text-sm line-clamp-3 flex-grow mb-4">
+                  {card.back}
+                </p>
 
-          if (!card.id || typeof card.id !== 'string') {
-            console.warn("Invalid or missing string ID for card key:", card);
+                <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mt-auto">
+                  <span>Difficulty: {card.difficulty || 0}/5</span>
+                  <span>Last reviewed: {card.lastReviewed ? new Date(card.lastReviewed.seconds * 1000).toLocaleDateString() : 'Never'}</span>
+                </div>
+              </Link>
+              <div className="flex justify-end gap-1 pt-4 border-t border-gray-100 dark:border-gray-700 mt-4">
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => router.push(`/decks/${deckId}/cards/${card.id}/edit`)}
+                  className="p-1.5 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                >
+                  <Pencil className="w-4 h-4" />
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => setCardToDelete(card)}
+                  className="p-1.5 text-gray-400 hover:text-red-500 transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </motion.button>
+              </div>
+            </motion.div>
+          ))
           }
-
-          return (
-            // Temporarily render only card ID to debug basic rendering
-            <div key={card.id}>
-              {card.id}
-            </div>
-          );
-        })}
-        {/* </AnimatePresence> */}
+        </AnimatePresence>
 
         {/* Add New Card Card */}
         <motion.div
@@ -465,7 +361,7 @@ export default function DeckDetailPage() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
           transition={{ duration: 0.4, delay: filteredCards.length * 0.05 }}
-          className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:shadow-xl transition-shadow group"
+          className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 flex flex-col items-center justify-center text-center cursor-pointer hover:shadow-lg transition-shadow group"
           onClick={() => router.push(`/decks/${deckId}/cards/new`)}
         >
           <motion.div
@@ -475,16 +371,12 @@ export default function DeckDetailPage() {
           >
             <Plus className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
           </motion.div>
-          <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">Add New Card</h3>
-          <p className="text-gray-600 dark:text-gray-400 text-sm">
-            Create a new flashcard for this deck
-          </p>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Add New Card</h3>
         </motion.div>
-      </motion.div>
+
+      </div>
 
       {/* Empty State */}
-      {/* Temporarily comment out Empty State for debugging */}
-      {/*
       {sortedCards.length === 0 && !searchQuery && filterBy === 'all' && (
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
@@ -514,11 +406,8 @@ export default function DeckDetailPage() {
           </motion.button>
         </motion.div>
       )}
-      */}
 
       {/* Empty State - Search/Filter */}
-      {/* Temporarily comment out Empty State - Search/Filter for debugging */}
-      {/*
       {sortedCards.length === 0 && (searchQuery || filterBy !== 'all') && (
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
@@ -534,28 +423,27 @@ export default function DeckDetailPage() {
             />
           </div>
           <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">No matching cards found</h3>
-          <p className="text-gray-600 dark:text-gray-400 text-sm line-clamp-3 flex-grow mb-4">
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
             Try adjusting your search or filters.
           </p>
         </motion.div>
       )}
-      */}
 
       {/* Delete Deck Modal */}
       <DeleteDeckDialog
         open={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
-        deckId={deck?.id}
-        deckTitle={deck?.title}
+        deckId={deck.id}
+        deckTitle={deck.title}
       />
 
       {/* Delete Card Modal */}
       <DeleteCardDialog
         open={!!cardToDelete}
         onClose={() => setCardToDelete(null)}
-        deckId={deck?.id}
+        deckId={deck.id}
         card={cardToDelete}
       />
-    </div >
+    </div>
   );
-}
+} 
