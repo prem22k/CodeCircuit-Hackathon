@@ -68,7 +68,7 @@ export function Footer() {
             <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">Connect With Us</h4>
             <div className="flex space-x-4">
               <a
-                href="https://github.com"
+                href="https://github.com/prem22k"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
@@ -76,7 +76,7 @@ export function Footer() {
                 <Github className="w-5 h-5" />
               </a>
               <a
-                href="https://twitter.com"
+                href="https://x.com/premsaik22"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
@@ -84,7 +84,7 @@ export function Footer() {
                 <X className="w-5 h-5" />
               </a>
               <a
-                href="https://linkedin.com"
+                href="https://www.linkedin.com/in/premsai22k/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
