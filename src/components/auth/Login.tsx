@@ -16,7 +16,7 @@ const Login = () => {
     if (user && !loading) {
       // Add a slight delay before redirecting for smoother exit animation
       const timer = setTimeout(() => {
-        router.push('/decks');
+      router.push('/decks');
       }, 300);
       return () => clearTimeout(timer);
     }
@@ -78,23 +78,23 @@ const Login = () => {
           >
             Unlock your potential by signing in to sync your flashcards across devices and never lose your progress.
           </motion.p>
-
+        
           <motion.button
-            onClick={handleGoogleSignIn}
+          onClick={handleGoogleSignIn}
             disabled={loading}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             className="w-full px-6 py-3 bg-white hover:bg-gray-50 text-gray-900 border border-gray-300 rounded-xl 
                      flex items-center justify-center gap-3 transition-all duration-300 shadow-sm hover:shadow-md
                      dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-white dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
+        >
             <Image
               src="/google-icon.svg"
               alt="Google logo"
               width={20}
               height={20}
-            />
-            Continue with Google
+          />
+          Continue with Google
             <motion.span
                initial={{ x: -5, opacity: 0 }}
                animate={{ x: 0, opacity: 1 }}
@@ -118,4 +118,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Login; 

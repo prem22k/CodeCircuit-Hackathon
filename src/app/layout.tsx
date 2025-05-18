@@ -23,8 +23,8 @@ export default function RootLayout({
       <body className={inter.className}>
         <ThemeProvider>
           <ToastProvider>
-            <div className="min-h-screen flex flex-col">
-              <NavBar />
+          <div className="min-h-screen flex flex-col">
+            <NavBar />
               <main className="flex-grow p-4 sm:p-6 lg:p-8">
                 <AnimatePresence mode="wait" initial={false}>
                   <motion.div
@@ -34,12 +34,12 @@ export default function RootLayout({
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.3, ease: "easeInOut" }}
                   >
-                    {children}
+            {children}
                   </motion.div>
                 </AnimatePresence>
-              </main>
-              <Footer />
-            </div>
+            </main>
+            <Footer />
+          </div>
           </ToastProvider>
         </ThemeProvider>
       </body>
