@@ -565,9 +565,9 @@ export default function DeckDetailPage() {
       )}
       */}
 
-  {/* Empty State - Search/Filter */ }
-  {/* Temporarily comment out Empty State - Search/Filter for debugging */ }
-  {/*
+      {/* Empty State - Search/Filter */}
+      {/* Temporarily comment out Empty State - Search/Filter for debugging */}
+      {/*
       {sortedCards.length === 0 && (searchQuery || filterBy !== 'all') && (
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
@@ -590,21 +590,21 @@ export default function DeckDetailPage() {
       )}
       */}
 
-  {/* Delete Deck Modal */ }
-  <DeleteDeckDialog
-    open={isDeleteModalOpen}
-    onClose={() => setIsDeleteModalOpen(false)}
-    deckId={deck?.id}
-    deckTitle={deck?.title}
-  />
+      {/* Delete Deck Modal */}
+      <DeleteDeckDialog
+        open={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        deckId={deck?.id}
+        deckTitle={deck?.title}
+      />
 
-  {/* Delete Card Modal */ }
-  <DeleteCardDialog
-    open={!!cardToDelete}
-    onClose={() => setCardToDelete(null)}
-    deckId={deck?.id}
-    card={cardToDelete}
-  />
+      {/* Delete Card Modal */}
+      <DeleteCardDialog
+        open={!!cardToDelete}
+        onClose={() => setCardToDelete(null)}
+        deckId={deck?.id}
+        card={cardToDelete}
+      />
     </div >
   );
 }
