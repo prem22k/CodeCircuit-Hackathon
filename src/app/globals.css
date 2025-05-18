@@ -55,16 +55,28 @@
   }
   body {
     @apply bg-background text-foreground;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    /* Add smooth transition for theme changes */
-    transition: color 0.3s ease-in-out, background-color 0.3s ease-in-out;
   }
 }
 
-/* Removed custom component classes and redundant styles */
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-4 py-2;
+  }
 
-/* Card Flip Animation - Keep relevant styles */
+  .btn-primary {
+    @apply bg-primary text-primary-foreground hover:bg-primary/90;
+  }
+
+  .btn-outline {
+    @apply border border-input bg-background hover:bg-accent hover:text-accent-foreground;
+  }
+
+  .btn-ghost {
+    @apply hover:bg-accent hover:text-accent-foreground;
+  }
+}
+
+/* Card Flip Animation */
 .perspective-1000 {
   perspective: 1000px;
 }
@@ -81,11 +93,47 @@
   transform: rotateY(180deg);
 }
 
-/* Loading Spinner - Defined in component, keep keyframes if not duplicated */
+/* 3D Flip Animation */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
+/* Button Styles */
+.btn {
+  @apply px-4 py-2 rounded-lg font-medium transition-colors;
+}
+
+.btn-primary {
+  @apply bg-primary text-primary-foreground hover:bg-primary/90;
+}
+
+.btn-outline {
+  @apply border border-input bg-background hover:bg-accent hover:text-accent-foreground;
+}
+
+.btn-danger {
+  @apply bg-destructive text-destructive-foreground hover:bg-destructive/90;
+}
+
+.btn-success {
+  @apply bg-green-600 text-white hover:bg-green-700;
+}
+
+/* Loading Spinner */
 @keyframes spin {
   to {
     transform: rotate(360deg);
   }
 }
 
-/* The `animate-spin` class is provided by Tailwind CSS */ 
+.animate-spin {
+  animation: spin 1s linear infinite;
+} 
