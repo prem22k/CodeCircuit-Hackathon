@@ -61,7 +61,11 @@ export function useSRS(deckId: string) {
 
   // Process a card review
   const processCardReview = async (cardId: string, performance: number) => {
-    if (!user || !deckId) return;
+    console.log('processCardReview called', { cardId, performance, deckId });
+    if (!user || !deckId) {
+      console.log('processCardReview: Missing user or deckId', { user, deckId });
+      return;
+    }
 
     const currentReview = reviews[cardId] || createInitialReview(cardId);
     const result = processReview(currentReview, performance);
@@ -78,6 +82,7 @@ export function useSRS(deckId: string) {
 
     // Also save a review history record
     try {
+      console.log('Attempting to save review history for user:', user.id, 'deck:', deckId);
       const historyRef = collection(db, 'users', user.id, 'decks', deckId, 'history');
       await addDoc(historyRef, {
         cardId: cardId,
@@ -86,6 +91,7 @@ export function useSRS(deckId: string) {
         deckId: deckId, // Include deckId for easier querying if needed
         userId: user.id // Include userId for easier querying/security rule application
       });
+      console.log('Review history saved successfully');
     } catch (err) {
       console.error('Error saving review history:', err);
       // Optionally set an error state or show a toast
