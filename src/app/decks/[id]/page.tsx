@@ -439,71 +439,22 @@ export default function DeckDetailPage() {
       >
         {/* Temporarily comment out AnimatePresence */}
         {/* <AnimatePresence> */}
-        {simplifiedCards.map((card: any) => {
-          // Add a check and log for card.id
+        {sortedCards.map((card: any) => {
           if (!card || !card.id) {
             console.error("Skipping rendering for card with missing or invalid ID:", card);
             return null; // Skip rendering this card
           }
           console.log("Attempting to render card with ID:", card.id);
 
-          // Add a check for the key prop
           if (!card.id || typeof card.id !== 'string') {
             console.warn("Invalid or missing string ID for card key:", card);
           }
 
           return (
-            <div // Changed from motion.div
-              key={card.id}
-              // layout
-              // initial={{ opacity: 0, y: 50, scale: 0.9 }}
-              // animate={{ opacity: 1, y: 0, scale: 1 }}
-              // exit={{ opacity: 0, y: 20, scale: 0.9 }}
-              // transition={{ type: "spring", stiffness: 100, damping: 20 }}
-              // whileHover={{ y: -5, boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)" }}
-              className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700 flex flex-col"
-            >
-              {/* Temporarily simplified card content for debugging */}
-              <div className="flex-1 p-6 block">
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white leading-tight pr-4">
-                  {card.front}
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400 text-sm line-clamp-3 flex-grow mb-4">
-                  {card.back}
-                </p>
-              </div>
-              {/* End simplified card content */}
-
-              {/* Temporarily disable action buttons */}
-              {/*
-              <div className="flex justify-end gap-1 p-4 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-100 dark:border-gray-700">
-                <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => {
-                    console.log("Edit button clicked for card:", card.id);
-                    // router.push(`/decks/${deckId}/cards/${card.id}/edit`); // Temporarily disable navigation
-                  }}
-                  className="p-1.5 text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-md transition-colors"
-                  aria-label="Edit card"
-                >
-                  <Pencil className="w-5 h-5" />
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => {
-                    console.log("Delete button clicked for card:", card.id);
-                    setCardToDelete(card);
-                  }}
-                  className="p-1.5 text-gray-500 hover:text-red-500 rounded-md transition-colors"
-                  aria-label="Delete card"
-                >
-                  <Trash2 className="w-5 h-5" />
-                </motion.button>
-              </div>
-              */}
-            </div> // Changed from motion.div
+            // Temporarily render only card ID to debug basic rendering
+            <div key={card.id}>
+              {card.id}
+            </div>
           );
         })}
         {/* </AnimatePresence> */}
@@ -524,7 +475,7 @@ export default function DeckDetailPage() {
           >
             <Plus className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
           </motion.div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Add New Card</h3>
+          <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">Add New Card</h3>
           <p className="text-gray-600 dark:text-gray-400 text-sm">
             Create a new flashcard for this deck
           </p>
