@@ -69,40 +69,28 @@ export default function DeckDetailPage() {
 
     console.log(`Attempting to subscribe to deck and cards for user ${user.id}, deck ${deckId}`);
     const deckRef = doc(db, `users/${user.id}/decks/${deckId}`);
-    const cardsRef = collection(db, `users/${user.id}/decks/${deckId}/cards`);
 
     // Subscribe to deck changes
     const unsubscribeDeck = onSnapshot(deckRef, (doc) => {
       console.log("Deck snapshot received:", doc.exists() ? doc.data() : "Deck does not exist");
       if (doc.exists()) {
-        setDeck({ id: doc.id, ...doc.data() });
+        const deckData = doc.data();
+        setDeck({ id: doc.id, ...deckData });
+        setCards(deckData.cards || []); // Populate cards from deck.cards array
+        setLoading(false); // Set loading to false after deck and cards are loaded
       } else {
         toast.error('Deck not found');
         router.push('/decks');
+        setLoading(false); // Also set loading to false on error/not found
       }
     }, (error) => {
       console.error('Error fetching deck:', error);
       toast.error('Failed to load deck');
-    });
-
-    // Subscribe to cards changes
-    const unsubscribeCards = onSnapshot(cardsRef, (snapshot) => {
-      const cardsData = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      console.log("Cards snapshot received:", cardsData.length, "cards");
-      setCards(cardsData);
-      setLoading(false);
-    }, (error) => {
-      console.error('Error fetching cards:', error);
-      toast.error('Failed to load cards');
       setLoading(false);
     });
 
     return () => {
       unsubscribeDeck();
-      unsubscribeCards();
     };
   }, [user, deckId, router]);
 
