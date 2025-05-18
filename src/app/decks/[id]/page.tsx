@@ -445,57 +445,11 @@ export default function DeckDetailPage() {
         </motion.div>
       </motion.div>
 
-      {/* Empty State */}
-      {sortedCards.length === 0 && !searchQuery && filterBy === 'all' && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="text-center py-12 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 mt-8"
-        >
-          <div className="w-32 h-32 mx-auto mb-6 relative opacity-70">
-            <Image
-              src={theme === 'dark' ? '/dark.png' : '/light.png'}
-              alt="No cards"
-              fill
-              className="object-contain"
-            />
-          </div>
-          <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">No cards yet</h3>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
-            Add your first card to this deck to start studying.
-          </p>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => router.push(`/decks/${deckId}/cards/new`)}
-            className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 flex items-center space-x-2 mx-auto"
-          >
-            <Plus className="w-5 h-5" />
-            <span>Add Your First Card</span>
-          </motion.button>
-        </motion.div>
-      )}
-
-      {/* Empty State - Search/Filter */}
-      {sortedCards.length === 0 && (searchQuery || filterBy !== 'all') && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="text-center py-12 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 mt-8"
-        >
-          <div className="w-32 h-32 mx-auto mb-6 relative opacity-70">
-            <Image
-              src={theme === 'dark' ? '/dark.png' : '/light.png'}
-              alt="No cards found"
-              fill
-              className="object-contain"
-            />
-          </div>
-          <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">No matching cards found</h3>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
-            Try adjusting your search or filters.
-          </p>
-        </motion.div>
+      {/* Add New Card Card */}
+      {sortedCards.length === 0 && (
+        <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 mt-8">
+          <p className="text-gray-600 dark:text-gray-400">DEBUG: Showing simple empty state.</p>
+        </div>
       )}
 
       {/* Delete Deck Modal */}
