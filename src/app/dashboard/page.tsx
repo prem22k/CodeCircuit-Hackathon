@@ -377,11 +377,11 @@ export default function DashboardPage() {
                 <ArrowRight className="w-4 h-4" />
               </motion.button>
             </div>
-            {dailyStats.length > 0 ? (
+            {dailyStats && dailyStats.length > 0 ? (
               <div className="space-y-4">
                 {dailyStats.slice(0, 5).map((stat, index) => (
                   <motion.div
-                    key={stat.date}
+                    key={stat.date || index}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.1 }}
@@ -724,23 +724,33 @@ export default function DashboardPage() {
               </div>
               {/* Display total reviews from aggregated data */}
               <div className="text-xs text-gray-400 dark:text-gray-500">
-                {dailyStats.reduce((sum, day) => sum + day.reviews, 0)} total reviews
+                {dailyStats && dailyStats.length > 0 ? dailyStats.reduce((sum, day) => sum + day.reviews, 0) : 0} total reviews
               </div>
             </div>
           </div>
-          <div className="relative">
-            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-white dark:from-gray-800 via-transparent to-white dark:to-gray-800 pointer-events-none z-10" />
-            <div className="overflow-x-auto pb-4">
-              <div className="min-w-[800px]">
-                <CalendarHeatmap
-                  data={heatmapData}
-                  startDate={ninetyDaysAgo}
-                  endDate={today}
-                />
+          {/* Check if dailyStats has data before rendering the heatmap */}
+          {dailyStats && dailyStats.length > 0 ? (
+            <div className="relative">
+              <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-white dark:from-gray-800 via-transparent to-white dark:to-gray-800 pointer-events-none z-10" />
+              <div className="overflow-x-auto pb-4">
+                <div className="min-w-[800px]">
+                  <CalendarHeatmap
+                    data={heatmapData}
+                    startDate={ninetyDaysAgo}
+                    endDate={today}
+                  />
+                </div>
               </div>
+              <div className="absolute bottom-0 left-0 w-full h-4 bg-gradient-to-t from-white dark:from-gray-800 to-transparent pointer-events-none z-10" />
             </div>
-            <div className="absolute bottom-0 left-0 w-full h-4 bg-gradient-to-t from-white dark:from-gray-800 to-transparent pointer-events-none z-10" />
-          </div>
+          ) : (
+            <div className="text-center py-12">
+              <div className="w-24 h-24 mx-auto mb-4 relative flex items-center justify-center">
+                <Calendar className="w-16 h-16 text-gray-400 dark:text-gray-600" />
+              </div>
+              <p className="text-gray-500 dark:text-gray-400">No review activity to display for the last 90 days.</p>
+            </div>
+          )}
           <div className="mt-4 flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4" />
@@ -750,7 +760,8 @@ export default function DashboardPage() {
               <TrendingUp className="w-4 h-4" />
               {/* Display active days percentage from aggregated data */}
               <span>
-                {dailyStats.length > 0
+                {/* Check if dailyStats is not empty before calculating percentage */}
+                {dailyStats && dailyStats.length > 0
                   ? `${Math.round(
                     (dailyStats.filter(day => day.reviews > 0).length / dailyStats.filter(day => new Date(day.date) >= ninetyDaysAgo && new Date(day.date) <= today).length) * 100
                   )}% active days`
