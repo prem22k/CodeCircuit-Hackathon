@@ -105,12 +105,15 @@ export default function DeckDetailPage() {
             console.log("Deck data retrieved:", deckData.title);
             setDeck(deckData);
 
-            // Temporary log to inspect cards immediately after setting state
-            console.log("Cards data immediately after setting state:", deckData.cards);
-
-            // TEMPORARY: Set deck to null immediately to prevent downstream processing
-            // If the page is stable now, the issue is triggered by processing deckData.cards
-            setDeck(null);
+            // Detailed temporary log to inspect cards data structure and content
+            console.log("Type of deckData.cards:", typeof deckData.cards);
+            console.log("Is deckData.cards an Array:", Array.isArray(deckData.cards));
+            console.log("Length of deckData.cards:", deckData.cards?.length);
+            if (deckData.cards && deckData.cards.length > 0) {
+              console.log("Details of first item in deckData.cards:", deckData.cards[0]);
+              console.log("Type of first card ID in deckData.cards:", typeof deckData.cards[0].id);
+              console.log("Value of first card ID in deckData.cards:", deckData.cards[0].id);
+            }
 
           } else {
             console.error("Deck not found");
@@ -140,6 +143,24 @@ export default function DeckDetailPage() {
   }, [user, deckId, router]); // Added router to dependency array
 
   // Debug output for component state
+  // useEffect(() => {
+  //   console.log("Current component state:", { 
+  //     loading, 
+  //     deckId, 
+  //     deckExists: !!deck,
+  //     cardsCount: deck?.cards?.length
+  //   });
+  // }, [loading, deckId, deck]);
+
+  // Temporary effect to inspect sortedCards when it changes
+  // useEffect(() => {
+  //   console.log("sortedCards state updated:", sortedCards);
+  //   if (sortedCards && sortedCards.length > 0) {
+  //     console.log("Details of first card in sortedCards:", sortedCards[0]);
+  //     // You can add more detailed checks here if needed
+  //     // e.g., console.log("Type of first card ID:", typeof sortedCards[0].id);
+  //     // console.log("Value of first card ID:", sortedCards[0].id);
+  //   }
   useEffect(() => {
     console.log("Current component state:", {
       loading,
@@ -177,6 +198,13 @@ export default function DeckDetailPage() {
         return 0;
     }
   });
+
+  // Temporary: Create a simplified cards array for debugging
+  const simplifiedCards = sortedCards.map(card => ({
+    id: card.id,
+    front: card.front,
+    back: card.back,
+  }));
 
   // Temporary effect to inspect sortedCards when it changes
   useEffect(() => {
@@ -423,15 +451,16 @@ export default function DeckDetailPage() {
       </div>
 
       {/* Cards Grid */}
-      {/* Use debug flag to conditionally render the grid */}
-      {!debugDisableCardRender && (
+      {/* Temporarily disable the entire cards grid rendering */}
+      {false && (
         <motion.div
           layout
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
         >
           {/* Temporarily comment out AnimatePresence */}
           {/* <AnimatePresence> */}
-          {sortedCards.map((card: any) => {
+          {/* Use simplifiedCards for mapping */}
+          {simplifiedCards.map((card: any) => {
             // Add a check and log for card.id
             if (!card || !card.id) {
               console.error("Skipping rendering for card with missing or invalid ID:", card);
@@ -468,33 +497,33 @@ export default function DeckDetailPage() {
 
                 {/* Temporarily disable action buttons */}
                 {/*
-                <div className="flex justify-end gap-1 p-4 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-100 dark:border-gray-700">
-                  <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => {
-                      console.log("Edit button clicked for card:", card.id);
-                      // router.push(`/decks/${deckId}/cards/${card.id}/edit`); // Temporarily disable navigation
-                    }}
-                    className="p-1.5 text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-md transition-colors"
-                    aria-label="Edit card"
-                  >
-                    <Pencil className="w-5 h-5" />
-                  </motion.button>
-                  <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => {
-                      console.log("Delete button clicked for card:", card.id);
-                      setCardToDelete(card);
-                    }}
-                    className="p-1.5 text-gray-500 hover:text-red-500 rounded-md transition-colors"
-                    aria-label="Delete card"
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </motion.button>
-                </div>
-                */}
+                  <div className="flex justify-end gap-1 p-4 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-100 dark:border-gray-700">
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => {
+                        console.log("Edit button clicked for card:", card.id);
+                        // router.push(`/decks/${deckId}/cards/${card.id}/edit`); // Temporarily disable navigation
+                      }}
+                      className="p-1.5 text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-md transition-colors"
+                      aria-label="Edit card"
+                    >
+                      <Pencil className="w-5 h-5" />
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => {
+                        console.log("Delete button clicked for card:", card.id);
+                        setCardToDelete(card);
+                      }}
+                      className="p-1.5 text-gray-500 hover:text-red-500 rounded-md transition-colors"
+                      aria-label="Delete card"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </motion.button>
+                  </div>
+                  */}
               </motion.div>
             );
           })}
@@ -525,61 +554,14 @@ export default function DeckDetailPage() {
       )}
 
       {/* Empty State */}
-      {
-        sortedCards.length === 0 && !searchQuery && filterBy === 'all' && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="text-center py-12 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 mt-8"
-          >
-            <div className="w-32 h-32 mx-auto mb-6 relative opacity-70">
-              <Image
-                src={theme === 'dark' ? '/dark.png' : '/light.png'}
-                alt="No cards"
-                fill
-                className="object-contain"
-              />
-            </div>
-            <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">No cards yet</h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
-              Add your first card to this deck to start studying.
-            </p>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => router.push(`/decks/${deckId}/cards/new`)}
-              className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 flex items-center space-x-2 mx-auto"
-            >
-              <Plus className="w-5 h-5" />
-              <span>Add Your First Card</span>
-            </motion.button>
-          </motion.div>
-        )
-      }
+      {/* Temporarily comment out Empty State for debugging */}
+      {/*
+      {sortedCards.length === 0 && !searchQuery && filterBy === 'all' && (\n        <motion.div\n          initial={{ opacity: 0, scale: 0.95 }}\n          animate={{ opacity: 1, scale: 1 }}\n          className=\"text-center py-12 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 mt-8\"\n        >\n          <div className=\"w-32 h-32 mx-auto mb-6 relative opacity-70\">\n            <Image\n              src={theme === \'dark\' ? \'/dark.png\' : \'/light.png\'}\n              alt=\"No cards\"\n              fill\n              className=\"object-contain\"\n            />\n          </div>\n          <h3 className=\"text-xl font-semibold mb-2 text-gray-900 dark:text-white\">No cards yet</h3>\n          <p className=\"text-gray-600 dark:text-gray-400 mb-6\">\n            Add your first card to this deck to start studying.\n          </p>\n          <motion.button\n            whileHover={{ scale: 1.05 }}\n            whileTap={{ scale: 0.95 }}\n            onClick={() => router.push(`/decks/${deckId}/cards/new`)}\n            className=\"px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 flex items-center space-x-2 mx-auto\"\n          >\n            <Plus className=\"w-5 h-5\" />\n            <span>Add Your First Card</span>\n          </motion.button>\n        </motion.div>\n      )}\n      */}
 
       {/* Empty State - Search/Filter */}
-      {
-        sortedCards.length === 0 && (searchQuery || filterBy !== 'all') && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="text-center py-12 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 mt-8"
-          >
-            <div className="w-32 h-32 mx-auto mb-6 relative opacity-70">
-              <Image
-                src={theme === 'dark' ? '/dark.png' : '/light.png'}
-                alt="No cards found"
-                fill
-                className="object-contain"
-              />
-            </div>
-            <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">No matching cards found</h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
-              Try adjusting your search or filters.
-            </p>
-          </motion.div>
-        )
-      }
+      {/* Temporarily comment out Empty State - Search/Filter for debugging */}
+      {/*
+      {sortedCards.length === 0 && (searchQuery || filterBy !== 'all') && (\n        <motion.div\n          initial={{ opacity: 0, scale: 0.95 }}\n          animate={{ opacity: 1, scale: 1 }}\n          className=\"text-center py-12 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 mt-8\"\n        >\n          <div className=\"w-32 h-32 mx-auto mb-6 relative opacity-70\">\n            <Image\n              src={theme === \'dark\' ? \'/dark.png\' : \'/light.png\'}\n              alt=\"No cards found\"\n              fill\n              className=\"object-contain\"\n            />\n          </div>\n          <h3 className=\"text-xl font-semibold mb-2 text-gray-900 dark:text-white\">No matching cards found</h3>\n          <p className=\"text-gray-600 dark:text-gray-400 mb-6\">\n            Try adjusting your search or filters.\n          </p>\n        </motion.div>\n      )}\n      */}
 
       {/* Delete Deck Modal */}
       <DeleteDeckDialog
