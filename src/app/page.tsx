@@ -153,7 +153,7 @@ export default function HomePage() {
                   className="relative"
                 >
                   <Image
-                    src={theme === 'dark' ? '/dark.png' : '/light.png'}
+                    src={'/light.png'}
                     alt="Student studying illustration"
                     fill
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
