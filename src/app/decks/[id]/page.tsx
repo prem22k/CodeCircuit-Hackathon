@@ -360,89 +360,70 @@ export default function DeckDetailPage() {
       </div>
 
       {/* Cards Grid */}
-      <motion.div
-        layout
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-      >
-        <AnimatePresence>
-          {sortedCards.map((card: any) => (
-            <motion.div
-              key={card.id}
-              layout
-              initial={{ opacity: 0, y: 50, scale: 0.9 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 20, scale: 0.9 }}
-              transition={{ type: "spring", stiffness: 100, damping: 20 }}
-              whileHover={{ y: -5, boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)" }}
-              className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700 flex flex-col"
-            >
-              <Link href={`/decks/${deckId}/cards/${card.id}/edit`} className="flex-1 p-6 block">
-                <div className="flex justify-between items-start mb-4">
-                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white leading-tight pr-4">
-                    {card.front}
-                  </h3>
-                </div>
-                <p className="text-gray-600 dark:text-gray-400 text-sm line-clamp-3 flex-grow mb-4">
-                  {card.back}
-                </p>
-                <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
-                  <div className="flex items-center gap-1">
-                    <Target className="w-4 h-4" />
-                    <span>Difficulty: {card.difficulty || 0}/5</span>
-                  </div>
-                  {card.lastReviewed && (
-                    <div className="flex items-center gap-1">
-                      <Clock className="w-4 h-4" />
-                      <span>Last reviewed: {new Date(card.lastReviewed.seconds * 1000).toLocaleDateString()}</span>
-                    </div>
-                  )}
-                </div>
-              </Link>
-              <div className="flex justify-end gap-1 p-4 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-100 dark:border-gray-700">
-                <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => router.push(`/decks/${deckId}/cards/${card.id}/edit`)}
-                  className="p-1.5 text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-md transition-colors"
-                  aria-label="Edit card"
-                >
-                  <Pencil className="w-5 h-5" />
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => setCardToDelete(card)}
-                  className="p-1.5 text-gray-500 hover:text-red-500 rounded-md transition-colors"
-                  aria-label="Delete card"
-                >
-                  <Trash2 className="w-5 h-5" />
-                </motion.button>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Removed AnimatePresence and motion from grid and items for debugging empty state */}
+        {sortedCards.map((card: any) => (
+          <div
+            key={card.id}
+            className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700 flex flex-col"
+          >
+            <Link href={`/decks/${deckId}/cards/${card.id}/edit`} className="flex-1 p-6 block">
+              <div className="flex justify-between items-start mb-4">
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white leading-tight pr-4">
+                  {card.front}
+                </h3>
               </div>
-            </motion.div>
-          ))}
-        </AnimatePresence>
+              <p className="text-gray-600 dark:text-gray-400 text-sm line-clamp-3 flex-grow mb-4">
+                {card.back}
+              </p>
+              <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+                <div className="flex items-center gap-1">
+                  <Target className="w-4 h-4" />
+                  <span>Difficulty: {card.difficulty || 0}/5</span>
+                </div>
+                {card.lastReviewed && (
+                  <div className="flex items-center gap-1">
+                    <Clock className="w-4 h-4" />
+                    <span>Last reviewed: {new Date(card.lastReviewed.seconds * 1000).toLocaleDateString()}</span>
+                  </div>
+                )}
+              </div>
+            </Link>
+            <div className="flex justify-end gap-1 p-4 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-100 dark:border-gray-700">
+              <button
+                onClick={() => router.push(`/decks/${deckId}/cards/${card.id}/edit`)}
+                className="p-1.5 text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-md transition-colors"
+                aria-label="Edit card"
+              >
+                <Pencil className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => setCardToDelete(card)}
+                className="p-1.5 text-gray-500 hover:text-red-500 rounded-md transition-colors"
+                aria-label="Delete card"
+              >
+                <Trash2 className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        ))}
 
         {/* Add New Card Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: filteredCards.length * 0.05 }}
+        <div
           className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:shadow-xl transition-shadow group"
           onClick={() => router.push(`/decks/${deckId}/cards/new`)}
         >
-          <motion.div
-            whileHover={{ scale: 1.05, rotate: 90 }}
-            whileTap={{ scale: 0.95 }}
+          <div
             className="p-4 bg-indigo-100 dark:bg-indigo-900/30 rounded-full mb-4"
           >
             <Plus className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
-          </motion.div>
+          </div>
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Add New Card</h3>
           <p className="text-gray-600 dark:text-gray-400 text-sm">
             Create a new flashcard for this deck
           </p>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
       {/* Add New Card Card */}
       {sortedCards.length === 0 && (
